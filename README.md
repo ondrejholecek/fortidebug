@@ -152,9 +152,11 @@ $ ./stack_dump.py --host 10.0.0.1 --process-name miglogd
 This program displays the processes running on each CPU (core).
 
 Be aware that the processes can jump between different cores during their lifetime, and this collects the actual status 
-only once per `--cycle-time`, hence this is not very accurate.
+only once per `--cycle-time`, hence this is not very accurate.  It can still be used to identify the process occupying 
+the specific core all the time.
 
-However, it can be used to identify the process occupying the specific core all the time.
+There is one line for each CPU for every cycle and it contains the space separated processes in format 
+'processname'[STATE](PID).
 
 ```
 $ ./processes_on_cpu.py --host 10.0.0.1
