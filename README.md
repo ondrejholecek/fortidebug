@@ -156,7 +156,7 @@ only once per `--cycle-time`, hence this is not very accurate.  It can still be 
 the specific core all the time.
 
 There is one line for each CPU for every cycle and it contains the space separated processes in format 
-'processname'[STATE](PID).
+'processname'\[STATE\](PID).
 
 ```
 $ ./processes_on_cpu.py --host 10.0.0.1
@@ -202,7 +202,7 @@ This is very similar to FortiGate's "diagnose sys top" program, with following d
 - the cpu the process was last seen running on is shown
 - cpu utilization is split between "kernel" and "userland" utilization for each process
 - it displays the "global" utilization (percentage of all possible CPU ticks)
-- and it also displays "of counsumed" utilization (percentage out of the running processes)
+- and it also displays "of consumed" utilization (percentage out of the running processes)
 - it **does not** display any memory statistics
 
 Different sorting algorithms can be applied (see help for "--sort-by" option).
