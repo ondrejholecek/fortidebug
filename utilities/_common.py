@@ -81,7 +81,7 @@ def prepend_timestamp(data, etime, info=""):
 		lines = []
 		for line in data.split("\n"):
 			if len(line) == 0: continue
-			lines.append("[%s] (%s) %s" % (etime, info, line,))
+			lines.append("[%s] (%s) %s" % (etime, info.replace(" ", "_"), line,))
 		
 		return "\n".join(lines)
 
