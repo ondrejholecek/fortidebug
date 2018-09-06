@@ -264,3 +264,37 @@ port18          1000 |      42803     26.25 mb      76256    896.01 mb |      23
 port25          1000 |      27612    316.29 mb      16959     10.47 mb |      63850    741.31 mb      28443    324.92 mb |          1        440 b          0          0 b | 100 100 100 100 |       0       0       0 |
 port38         10000 |      76330    895.01 mb      42663     26.15 mb |      41594    490.89 mb      77035      0.91 gb |          1        720 b          0          0 b | 100 100 100 100 |       0       0       0 |
 ```
+
+### ips_traffic.py
+
+This utility continuously parses the output of "diag ips session stat" and displays various IPS session statistics.
+
+It can show (everything per engine + summary):
+- TCP/UDP/ICMP/IP sessions currently in use
+- TCP/UDP/ICMP/IP sessions currently active
+- based on "totals" it can calculate the average number of sessions per second (this was verified with FortiTester)
+- recent packets per seconds as reported by the IPS engine - this is counted in both directions together (this was
+  also verified with FortiTester)
+- recent bits per seconds as reported by the IPS engine (this was verified with FortiTester)
+
+Run it with "-h" parameter to find all possible options - the option names are pretty self-explanatory.
+
+You can enable each counter independently (by default all are disabled!), or you can use "--all-counters" to enable 
+all known counters (in that case you may also want to use "--empty-line" parameter to print an empty line after each 
+cycle to make the output more human readable).
+
+*Note: For some reason (not only but mainly when somebody else is debugging on the save device) the output of the 
+command it not always correct/showing all the IPS engines. The program can recognize the problem, because it knows 
+how many IPS engines there are running. In that case the error is printed, but if it is only occasional, it is 
+not really a problem.*
+
+```
+$ ./ips_traffic.py --host 10.0.0.1 --cycle-time 5 --sessions-in-use --recent-pps --recent-bps
+[2018-09-06 17:53:04+02:00] (ips_traffic) counter        IPSE#1   IPSE#2   IPSE#3   IPSE#4   IPSE#5   IPSE#6   IPSE#7   IPSE#8   IPSE#9  IPSE#10        total
+[2018-09-06 17:53:04+02:00] (ips_traffic) ses_in_use       3420     3869      169      545     1049     1598     1993     2632     2914     3276        21465
+[2018-09-06 17:53:04+02:00] (ips_traffic) rec_packps      29218    29594    29333    29133    29362    28475    29922    28980    29691    29716       293424
+[2018-09-06 17:53:04+02:00] (ips_traffic) rec_bitps      29.27m   29.64m   29.38m   29.18m   29.41m   28.52m   29.97m   29.03m   29.74m   29.77m      293.92m
+[2018-09-06 17:53:09+02:00] (ips_traffic) ses_in_use       2656     3052     3641     3947     4490      813     1223     1658     2056     2582        26118
+[2018-09-06 17:53:09+02:00] (ips_traffic) rec_packps      29546    29130    29681    29693    29481    29890    29565    29546    28365    29204       294101
+[2018-09-06 17:53:09+02:00] (ips_traffic) rec_bitps      29.59m   29.18m   29.73m   29.74m   29.53m   29.94m   29.61m   29.59m   28.41m   29.25m      294.59m
+```
