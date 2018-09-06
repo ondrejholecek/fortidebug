@@ -34,6 +34,26 @@ sshc, args = ssh([
 	{ 'name':'--ip-sessions-per-second',  'default':False, 'action':'store_true',  'help':'Show IP sessions per second' },
 	{ 'name':'--all-counters',  'default':False, 'action':'store_true',  'help':'Show all known counters' },
 ], """
+This utility continuously parses the output of "diag ips session stat" and displays various IPS session statistics.
+
+It can show (everything per engine + summary):
+- TCP/UDP/ICMP/IP sessions currently in use
+- TCP/UDP/ICMP/IP sessions currently active
+- based on "totals" it can calculate the average number of sessions per second (this was verified with FortiTester)
+- recent packets per seconds as reported by the IPS engine - this is counted in both directions together (this was
+  also verified with FortiTester)
+- recent bits per seconds as reported by the IPS engine (this was verified with FortiTester)
+
+Run it with "-h" parameter to find all possible options - the option names are pretty self-explanatory.
+
+You can enable each counter independently (by default all are disabled!), or you can use "--all-counters" to enable 
+all known counters (in that case you may also want to use "--empty-line" parameter to print an empty line after each 
+cycle to make the output more human readable).
+
+Note: For some reason (not only but mainly when somebody else is debugging on the save device) the output of the 
+command it not always correct/showing all the IPS engines. The program can recognize the problem, because it knows 
+how many IPS engines there are running. In that case the error is printed, but if it is only occasional, it is 
+not really a problem.
 """)
 
 def do(sshc, info):
