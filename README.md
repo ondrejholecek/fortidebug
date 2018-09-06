@@ -289,12 +289,16 @@ how many IPS engines there are running. In that case the error is printed, but i
 not really a problem.*
 
 ```
-$ ./ips_traffic.py --host 10.0.0.1 --cycle-time 5 --sessions-in-use --recent-pps --recent-bps
-[2018-09-06 17:53:04+02:00] (ips_traffic) counter        IPSE#1   IPSE#2   IPSE#3   IPSE#4   IPSE#5   IPSE#6   IPSE#7   IPSE#8   IPSE#9  IPSE#10        total
-[2018-09-06 17:53:04+02:00] (ips_traffic) ses_in_use       3420     3869      169      545     1049     1598     1993     2632     2914     3276        21465
-[2018-09-06 17:53:04+02:00] (ips_traffic) rec_packps      29218    29594    29333    29133    29362    28475    29922    28980    29691    29716       293424
-[2018-09-06 17:53:04+02:00] (ips_traffic) rec_bitps      29.27m   29.64m   29.38m   29.18m   29.41m   28.52m   29.97m   29.03m   29.74m   29.77m      293.92m
-[2018-09-06 17:53:09+02:00] (ips_traffic) ses_in_use       2656     3052     3641     3947     4490      813     1223     1658     2056     2582        26118
-[2018-09-06 17:53:09+02:00] (ips_traffic) rec_packps      29546    29130    29681    29693    29481    29890    29565    29546    28365    29204       294101
-[2018-09-06 17:53:09+02:00] (ips_traffic) rec_bitps      29.59m   29.18m   29.73m   29.74m   29.53m   29.94m   29.61m   29.59m   28.41m   29.25m      294.59m
+$ ./ips_traffic.py --host 10.0.0.1 --cycle-time 5 --empty-line --recent-pps --recent-bps --all-sessions-per-second
+[2018-09-06 18:23:51+02:00] (ips_traffic) counter        IPSE#1   IPSE#2   IPSE#3   IPSE#4   IPSE#5   IPSE#6   IPSE#7   IPSE#8   IPSE#9  IPSE#10        total
+[2018-09-06 18:23:51+02:00] (ips_traffic) rec_packps      29160    28959    29354    29047    29229    28733    29275    29322    29315    29336       291730
+[2018-09-06 18:23:51+02:00] (ips_traffic) rec_bitps      29.20m   29.00m   29.40m   29.09m   29.27m   28.78m   29.32m   29.36m   29.36m   29.38m      292.16m
+
+[2018-09-06 18:23:56+02:00] (ips_traffic) rec_packps      29256    29024    29014    29443    29239    28716    29743    29322    29315    29336       292408
+[2018-09-06 18:23:56+02:00] (ips_traffic) rec_bitps      29.30m   29.07m   29.06m   29.48m   29.28m   28.76m   29.79m   29.36m   29.36m   29.38m      292.83m
+[2018-09-06 18:23:56+02:00] (ips_traffic) all_s_p_sec      4225     4183     4158     4155     4238     4151     4252     4152     4320     4124        41958
+
+[2018-09-06 18:24:01+02:00] (ips_traffic) rec_packps      29635    29345    29260    29273    29568    29030    29795    29011    30136    28876       293929
+[2018-09-06 18:24:01+02:00] (ips_traffic) rec_bitps      29.68m   29.39m   29.30m   29.32m   29.61m   29.07m   29.84m   29.05m   30.18m   28.92m      294.35m
+[2018-09-06 18:24:01+02:00] (ips_traffic) all_s_p_sec      4264     4254     4175     4201     4208     4123     4232     4171     4276     4183        42087
 ```
