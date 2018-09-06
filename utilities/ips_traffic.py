@@ -32,6 +32,7 @@ sshc, args = ssh([
 	{ 'name':'--udp-sessions-per-second',  'default':False, 'action':'store_true',  'help':'Show UDP sessions per second' },
 	{ 'name':'--icmp-sessions-per-second',  'default':False, 'action':'store_true',  'help':'Show ICMP sessions per second' },
 	{ 'name':'--ip-sessions-per-second',  'default':False, 'action':'store_true',  'help':'Show IP sessions per second' },
+	{ 'name':'--all-sessions-per-second',  'default':False, 'action':'store_true',  'help':'Show all sessions per second' },
 	{ 'name':'--all-counters',  'default':False, 'action':'store_true',  'help':'Show all known counters' },
 ], """
 This utility continuously parses the output of "diag ips session stat" and displays various IPS session statistics.
@@ -40,6 +41,7 @@ It can show (everything per engine + summary):
 - TCP/UDP/ICMP/IP sessions currently in use
 - TCP/UDP/ICMP/IP sessions currently active
 - based on "totals" it can calculate the average number of sessions per second (this was verified with FortiTester)
+  (be aware that this is an average, so the totals might not much exactly for small number of sessions)
 - recent packets per seconds as reported by the IPS engine - this is counted in both directions together (this was
   also verified with FortiTester)
 - recent bits per seconds as reported by the IPS engine (this was verified with FortiTester)
@@ -113,6 +115,9 @@ def do(sshc, info):
 	if info['show']['ip_sessions_per_second'] and info['previous'] != None:
 		tmp = diff_per_interval(ipss, info['previous'], lambda x: x['sessions']['ip']['total'])
 		show_numbers(tmp, etime, 'ip_s_p_sec', lambda x: x['result'])
+	if info['show']['all_sessions_per_second'] and info['previous'] != None:
+		tmp = diff_per_interval(ipss, info['previous'], lambda x: x['sessions']['calculated_total']['total'])
+		show_numbers(tmp, etime, 'all_s_p_sec', lambda x: x['result'])
 	
 	
 	info['cycles']   += 1
@@ -199,6 +204,7 @@ if __name__ == '__main__':
 			'udp_sessions_per_second'  : False,
 			'icmp_sessions_per_second' : False,
 			'ip_sessions_per_second'   : False,
+			'all_sessions_per_second'  : False,
 		},
 	}
 
@@ -235,6 +241,8 @@ if __name__ == '__main__':
 		info['show']['icmp_sessions_per_second'] = True
 	if args.ip_sessions_per_second:
 		info['show']['ip_sessions_per_second'] = True
+	if args.all_sessions_per_second:
+		info['show']['all_sessions_per_second'] = True
 
 	if args.all_counters:
 		for k in info['show'].keys():
