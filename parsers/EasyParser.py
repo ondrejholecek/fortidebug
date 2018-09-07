@@ -16,3 +16,6 @@ class EasyParser:
 	
 	def get(self):
 		raise Exception("Function get must be implemented by parser")
+	
+	def simple_value(self, result, name):
+		raise Exception("Function get must be implemented by parser")

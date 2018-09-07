@@ -52,3 +52,9 @@ class ParserIPSSummary(EasyParser):
 
 		return engines
 
+	def simple_value(self, result, name):
+		if name == 'ipse_pids_all':
+			return [e['pid'] for e in result]
+
+		else:
+			raise Exception("Unknown simple value name")
