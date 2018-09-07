@@ -8,7 +8,15 @@ The project consists of 4 parts:
 - Definiton of different FortiGate models that is needed by some utilities (e.g. NIC to NP mapping).
 - Utilities that use both of the previous parts to merge and present the collected outputs in a human friendly form.
 
-At this moment the utilities should work on any Mac and Linux with python2.7. Testing on Windows 10 is planned.
+At this moment (Sep 7, 2018) all the utilities were tested and work correctly on (all 64bit):
+- MacOS High Sierra (10.13.6) with [Homebrew](https://brew.sh/)
+- Linux Debian 10 (Buster)
+- Linux Debian 9 (Stretch)
+- Windows 10 
+
+Note that Debian 8 (Jessie) does not have the right version of Paramiko and it is quite challenging
+to make this program running there. I would rather suggest to upgrade to supported Debian version.
+
 
 ## Installing prerequisites
 
@@ -45,10 +53,11 @@ Use the package manager to install Python 2.7 and Paramiko for Python. On Debian
 apt-get install python2.7 python-paramiko
 ```
 
-Alternatively, you can install Python and Pip via apt-get and then Paramiko via Pip:
+Alternatively, you can install Python and Pip via apt-get and then Paramiko via Pip, however this might need some
+more libraries to be installed in their development versions:
 
 ```
-apt-get install python2.7 python-pip
+apt-get install python2.7 python-pip python-dev libssl-dev
 pip install paramiko
 ```
 
