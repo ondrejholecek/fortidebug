@@ -66,7 +66,7 @@ class SSHCommands:
 	def connect(self):
 		self.client = paramiko.SSHClient()
 		if self.ssh_ignore_key:
-			self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy)
+			self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
 		else:
 			self.client.load_system_host_keys()
 
