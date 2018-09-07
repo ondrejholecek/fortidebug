@@ -393,7 +393,7 @@ disabled with "--quiet" option. To write a computer-frieldy .jsonl output to a f
 "diag firewall packet distribution" and "diag snmp ip frags" command at the very beginning.*
 
 ```
-$ ./script.py --host 10.0.0.1 --ignore-ssh-key --script ../samples/script.xml --cycle generic --cycle-time 20
+$ ./script.py --host 10.0.0.1 --script ../samples/script.xml --cycle generic
 [2018-09-08 00:15:26+02:00] (script) Version: FortiGate-1500D v5.6.0,build3404,180828 (GA)
 [2018-09-08 00:15:26+02:00] (script) Virus-DB: 62.00036(2018-09-07 11:28)
 [2018-09-08 00:15:26+02:00] (script) Extended DB: 1.00000(2012-10-17 15:46)
