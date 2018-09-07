@@ -83,16 +83,17 @@ Basicaly all the programs you may want to use are located in "utilities" directo
 to display the options that can be used. Following options are shared by most of the programs:
 
 ```
---host HOST           FortiGate hostname or IP address
---user USER           User name to log in as, default "admin"
---password PASSWORD   Password to log in with, default empty
---credfile CREDFILE   File to read the credentials from 
---port PORT           SSH port, default 22
+--host HOST                 FortiGate hostname or IP address
+--user USER                 User name to log in as, default "admin"
+--password PASSWORD         Password to log in with, default empty
+--credfile CREDFILE         File to read the credentials from 
+--port PORT                 SSH port, default 22
 --time-format {human-with-offset,human,timestamp,iso}  Format of the date and time
 --time-source {device,local}                           How to retrieve data and time
---debug               Enable debug outputs
---manual              Show manual
---ignore-ssh-key      Ignore SSH server key problems
+--debug                     Enable debug outputs
+--manual                    Show manual
+--ignore-ssh-key            Ignore SSH server key problems
+--max-cycles MAX_CYCLES     Maximum cycles to run
 ```
 
 ### Logging in 
@@ -122,6 +123,9 @@ There are another parameters that vary depending on what program you are running
 both the shared and the local options.
 
 Some utilities also accept "--manual" parameter which prints a more detailed information about the utility.
+
+Most of the utilities also accept "--max-cycles" option which limits the number of cycles to go through. By default this
+is unlimited, so the program will run "forever".
 
 
 ## Utilities
