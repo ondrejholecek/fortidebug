@@ -10,6 +10,56 @@ The project consists of 4 parts:
 
 At this moment the utilities should work on any Mac and Linux with python2.7. Testing on Windows 10 is planned.
 
+## Installation
+
+# Windows 64bit
+
+1. Download [https://www.python.org/ftp/python/2.7.15/python-2.7.15.amd64.msi](Python 2.7 for Windows 64bit installer) and install it.
+The default directory where it usually installs is "C:\Python27".
+
+2. Download [https://bootstrap.pypa.io/get-pip.py](Pip installer) and doubleclick it to install. If that does not work for any 
+reason, you can install it manually with following command:
+
+```
+cd <directory where you downloaded get-pip.py>
+C:\Python27\python.exe get-pip.py
+```
+
+3. Install the FortiMonitor dependencies from command line with Pip:
+
+```
+C:\Python27\Scripts\pip.exe install paramiko
+```
+
+# Windows 32bit
+
+Same as Windows 64bit, but use [https://www.python.org/ftp/python/2.7.15/python-2.7.15.msi](this Python 2.7 for Windows 32bit installer).
+
+# Linux
+
+Use the package manager to install Python 2.7 and Paramiko for Python. On Debian you can install both via apt-get:
+
+```
+apt-get install python2.7 python-paramiko
+```
+
+Alternatively, you can install Python and Pip via apt-get and then Paramiko via Pip:
+
+```
+apt-get install python2.7 python-pip
+pip install paramiko
+```
+
+# MacOS
+
+Use [https://brew.sh/](Homebrew) to install Python and Pip. Then use Pip to install Paramiko:
+
+```
+brew install python
+pip install paramiko
+```
+
+
 ## Usage
 
 Basicaly all the programs you may want to use are located in "utilities" directory. All of them accept "-h" parameter
