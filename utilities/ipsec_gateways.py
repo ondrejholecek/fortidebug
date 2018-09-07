@@ -64,7 +64,7 @@ if __name__ == '__main__':
 			'status': args.status,
 			'direction': args.direction,
 			'max_age': args.max_age,
-		}, args.cycle_time, debug=args.debug)
+		}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
 	except KeyboardInterrupt:
 		sshc.destroy()
 

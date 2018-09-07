@@ -23,6 +23,7 @@ def ssh(args=(), manual=''):
 	parser.add_argument('--debug', default=False, action="store_true", help='Enable debug outputs')
 	parser.add_argument('--manual', default=False, action="store_true", help='Show manual')
 	parser.add_argument('--ignore-ssh-key', default=False, action="store_true", help='Ignore SSH server key problems')
+	parser.add_argument('--max-cycles', default=None, type=int, help='Maximum cycles to run')
 	
 	# add local arguments
 	local = parser.add_argument_group('local parameters')
@@ -58,7 +59,7 @@ def ssh(args=(), manual=''):
 	return (sshc, args)
 
 
-def cycle(callback, args, min_interval, debug=True):
+def cycle(callback, args, min_interval, cycles_left=None, debug=True):
 	while True:
 		cycle_start = time.time()
 
@@ -71,6 +72,13 @@ def cycle(callback, args, min_interval, debug=True):
 	
 		if debug: print "Debug: Last cycle took %0.1f seconds, sleeping for %0.1f seconds" % (cycle_end-cycle_start, cycle_sleep,)
 		sys.stdout.flush()
+
+		if cycles_left != None and cycles_left[0] != None:
+			cycles_left[0] -= 1
+			if cycles_left[0] == 0: 
+				if debug: print "Debug: Maximum number of cycles reached, exiting"
+				break
+
 		time.sleep(cycle_sleep)
 
 def simple_command_with_timestamp(sshc, etime, command, info="", vdom=None):

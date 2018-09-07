@@ -52,7 +52,7 @@ if __name__ == '__main__':
 		cycle(do, {
 			'sshc': sshc, 
 			'pid_group_count': args.pid_group,
-		}, args.cycle_time, debug=args.debug)
+		}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
 	except KeyboardInterrupt:
 		sshc.destroy()
 

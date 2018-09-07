@@ -62,7 +62,7 @@ if __name__ == '__main__':
 			'sshc': sshc, 
 			'info': info,
 			'show_raw': args.show_raw,
-		}, args.cycle_time, debug=args.debug)
+		}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
 	except KeyboardInterrupt:
 		sshc.destroy()
 

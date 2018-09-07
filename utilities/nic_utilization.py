@@ -523,7 +523,7 @@ if __name__ == '__main__':
 			'ifaces': args.iface,
 			'spec': spec,
 			'info': info,
-		}, args.cycle_time, debug=args.debug)
+		}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
 	except KeyboardInterrupt:
 		sshc.destroy()
 

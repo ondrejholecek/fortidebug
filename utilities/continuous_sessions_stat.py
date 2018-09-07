@@ -27,7 +27,7 @@ if __name__ == '__main__':
 	try:
 		cycle(do, {
 			'sshc': sshc, 
-		}, args.cycle_time, debug=args.debug)
+		}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
 	except KeyboardInterrupt:
 		sshc.destroy()
 
