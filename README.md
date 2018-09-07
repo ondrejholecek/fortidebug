@@ -17,6 +17,12 @@ At this moment (Sep 7, 2018) all the utilities were tested and work correctly on
 Note that Debian 8 (Jessie) does not have the right version of Paramiko and it is quite challenging
 to make this program running there. I would rather suggest to upgrade to supported Debian version.
 
+All FortiGate hardware should be supported, however some utilities need a definition of the platform,
+which is currently very incomplete. Please raise an "Issue" here to ask for the right definition.
+
+Supported should be all FortiOS versions starting with 5.4, however it was not tested and there might
+be some differencies in different versions that might make some utilities incompatible. Please raise
+an "Issue" here if you find such problem.
 
 ## Installing prerequisites
 
