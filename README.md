@@ -14,10 +14,10 @@ At this moment the utilities should work on any Mac and Linux with python2.7. Te
 
 # Windows 64bit
 
-1. Download [https://www.python.org/ftp/python/2.7.15/python-2.7.15.amd64.msi](Python 2.7 for Windows 64bit installer) and install it.
+1. Download [Python 2.7 for Windows 64bit installer](https://www.python.org/ftp/python/2.7.15/python-2.7.15.amd64.msi) and install it.
 The default directory where it usually installs is "C:\Python27".
 
-2. Download [https://bootstrap.pypa.io/get-pip.py](Pip installer) and doubleclick it to install. If that does not work for any 
+2. Download [Pip installer](https://bootstrap.pypa.io/get-pip.py) and doubleclick it to install. If that does not work for any 
 reason, you can install it manually with following command:
 
 ```
@@ -33,7 +33,7 @@ C:\Python27\Scripts\pip.exe install paramiko
 
 # Windows 32bit
 
-Same as Windows 64bit, but use [https://www.python.org/ftp/python/2.7.15/python-2.7.15.msi](this Python 2.7 for Windows 32bit installer).
+Same as Windows 64bit, but use [this Python 2.7 for Windows 32bit installer](https://www.python.org/ftp/python/2.7.15/python-2.7.15.msi).
 
 # Linux
 
@@ -52,7 +52,7 @@ pip install paramiko
 
 # MacOS
 
-Use [https://brew.sh/](Homebrew) to install Python and Pip. Then use Pip to install Paramiko:
+Use [Homebrew](https://brew.sh/) to install Python and Pip. Then use Pip to install Paramiko:
 
 ```
 brew install python
