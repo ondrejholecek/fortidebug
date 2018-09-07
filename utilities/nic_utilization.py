@@ -5,6 +5,8 @@ import os
 # to be able to import our modules from the directory above
 os.sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+if os.name == 'nt': import msvcrt
+
 from parsers.CurrentTime import ParserCurrentTime
 from parsers.NIC2 import ParserNIC2
 from parsers.NP6Links import ParserNP6Links
@@ -71,7 +73,11 @@ def diff_counters(prev, curr, seconds):
 	return diff
 
 def show(stats, info, etime):
-	print "\x1b[2J\x1b[H\033[1mFortiGate interface statistics. Last update on: %s  (written by Ondrej Holecek <oholecek@fortinet.com>)\033[0m" % (datetime.datetime.now().replace(microsecond=0),)
+	if os.name == 'nt':
+		os.system('cls')
+		print "FortiGate interface statistics. Last update on: %s  (written by Ondrej Holecek <oholecek@fortinet.com>)" % (datetime.datetime.now().replace(microsecond=0),)
+	else:
+		print "\x1b[2J\x1b[H\033[1mFortiGate interface statistics. Last update on: %s  (written by Ondrej Holecek <oholecek@fortinet.com>)\033[0m" % (datetime.datetime.now().replace(microsecond=0),)
 
 	# header
 	line = "Interface      Speed"
@@ -181,7 +187,7 @@ def show_traffic(counter=None, header=False, custom=None):
 	if not info['show_colors']:
 		color_rx   = ""
 		color_tx   = ""
-		colond_end = ""
+		color_end  = ""
 
 	#return " | %10i %12i %10i %12i" % (
 	return " | %10i %s%12s%s %10i %s%12s%s" % (
@@ -288,10 +294,14 @@ def show_drops(counter=None, header=False, custom=None):
 	
 def change_view(info):
 	while True:
-		(fin, fout, fexc) = select.select([sys.stdin], [], [], 0)
-		if sys.stdin not in fin: break
+		if os.name == 'nt':
+			if msvcrt.kbhit(): r = msvcrt.getch()
+			else: break
+		else:
+			(fin, fout, fexc) = select.select([sys.stdin], [], [], 0)
+			if sys.stdin not in fin: break
+			r = sys.stdin.read(1).lower()
 
-		r = sys.stdin.read(1).lower()
 		if r == 'q': raise KeyboardInterrupt()
 		if r == 'f': info['show_front']      = not info['show_front']
 		if r == 'n': info['show_npu']        = not info['show_npu']
@@ -494,7 +504,8 @@ if __name__ == '__main__':
 	if args.show_timestamp:
 		info['show_timestamp'] = True
 
-	if args.no_colors:
+	# Windows terminal cannot show colors the way we use...
+	if args.no_colors or os.name == 'nt':
 		info['show_colors'] = False
 
 	# disable buffering for stdin
