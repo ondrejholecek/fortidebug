@@ -369,3 +369,49 @@ $ ./ips_traffic.py --host 10.0.0.1 --cycle-time 5 --empty-line --recent-pps --re
 [2018-09-06 18:24:01+02:00] (ips_traffic) rec_bitps      29.68m   29.39m   29.30m   29.32m   29.61m   29.07m   29.84m   29.05m   30.18m   28.92m      294.35m
 [2018-09-06 18:24:01+02:00] (ips_traffic) all_s_p_sec      4264     4254     4175     4201     4208     4123     4232     4171     4276     4183        42087
 ```
+
+### script.py
+
+This utility allows you to write and run custom commands and/or standard parsers on the remote FortiGate.
+
+The execution is controlled by the XML file (passed by "--script" option) which contains one or more "cycles".
+The "cycle" has a name and description and it contains the definition of the actions to take (like run
+simple command, run parser, etc.). At one time only once cycle can be executed and its name is passed
+by "--cycle" option. To find all available cycle names, use option "--list" (together with "--script").
+
+Format of the XML file and all its options is described in the sample XML file ("samples/script.xml").
+
+By default only the human readable output of the commands is printied on standard output and this can be
+disabled with "--quiet" option. To write a computer-frieldy .jsonl output to a file, use "--output" option.
+
+*Following example uses the sample script, that runs "get sys stat", "get sys perf stat", 
+"diag firewall packet distribution" and "diag snmp ip frags" command at the very beginning.*
+
+```
+$ ./script.py --host 10.0.0.1 --ignore-ssh-key --script ../samples/script.xml --cycle generic --cycle-time 20
+[2018-09-08 00:15:26+02:00] (script) Version: FortiGate-1500D v5.6.0,build3404,180828 (GA)
+[2018-09-08 00:15:26+02:00] (script) Virus-DB: 62.00036(2018-09-07 11:28)
+[2018-09-08 00:15:26+02:00] (script) Extended DB: 1.00000(2012-10-17 15:46)
+[2018-09-08 00:15:26+02:00] (script) Extreme DB: 1.00000(2012-10-17 15:47)
+[2018-09-08 00:15:26+02:00] (script) IPS-DB: 6.00741(2015-12-01 02:30)
+[2018-09-08 00:15:26+02:00] (script) IPS-ETDB: 14.00444(2018-09-06 00:27)
+[2018-09-08 00:15:26+02:00] (script) APP-DB: 14.00444(2018-09-06 00:27)
+[2018-09-08 00:15:26+02:00] (script) INDUSTRIAL-DB: 6.00741(2015-12-01 02:30)
+[...]
+[2018-09-08 00:15:26+02:00] (script)
+[2018-09-08 00:15:26+02:00] (script) CPU states: 0% user 0% system 0% nice 100% idle 0% iowait 0% irq 0% softirq
+[2018-09-08 00:15:26+02:00] (script) CPU0 states: 0% user 1% system 0% nice 99% idle 0% iowait 0% irq 0% softirq
+[2018-09-08 00:15:26+02:00] (script) CPU1 states: 0% user 0% system 0% nice 100% idle 0% iowait 0% irq 0% softirq
+[...]
+[2018-09-08 00:15:26+02:00] (script)
+[2018-09-08 00:15:27+02:00] (script) getting packet distribution statistics...
+[2018-09-08 00:15:27+02:00] (script) 0 bytes - 63 bytes: 2762981 packets
+[2018-09-08 00:15:27+02:00] (script) 64 bytes - 127 bytes: 487485 packets
+[2018-09-08 00:15:27+02:00] (script) 128 bytes - 255 bytes: 145966 packets
+[...]
+[2018-09-08 00:15:27+02:00] (script)
+[2018-09-08 00:15:27+02:00] (script) ReasmTimeout = 0
+[2018-09-08 00:15:27+02:00] (script) ReasmReqds   = 0
+[...]
+```
+
