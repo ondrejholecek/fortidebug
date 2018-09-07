@@ -372,7 +372,8 @@ $ ./ips_traffic.py --host 10.0.0.1 --cycle-time 5 --empty-line --recent-pps --re
 
 ### script.py
 
-This utility allows you to write and run custom commands and/or standard parsers on the remote FortiGate.
+This utility allows you to prepare and run custom commands on the remote FortiGate and save the output
+to a file (in ".jsonl" format) for futher analysis.
 
 The execution is controlled by the XML file (passed by "--script" option) which contains one or more "cycles".
 The "cycle" has a name and description and it contains the definition of the actions to take (like run
