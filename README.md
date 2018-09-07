@@ -10,7 +10,9 @@ The project consists of 4 parts:
 
 At this moment the utilities should work on any Mac and Linux with python2.7. Testing on Windows 10 is planned.
 
-## Installation
+## Installing prerequisites
+
+These utilities are written in Python 2.7 and need Paramiko library.
 
 ### Windows 64bit
 
