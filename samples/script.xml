@@ -1,0 +1,152 @@
+<!-- 
+	FortiMonitor "script.py" sample XML input.
+
+	This file is used to test new features implemented in the utility and
+	it should contain more-or-less all available features.
+-->
+
+<fortimonitor_scriptfile version="1">
+	<!-- Profiles control the behavior of the program. 
+
+	     This is not modifiable from the program. Only on the command line, different profile
+		  can be selected to override the default one for the specified "cycle".
+	-->
+	<profiles>
+		<profile name="main">
+			<!-- How long pause to make between each command, this is to be nice to FortiGate -->
+			<intercommand_sleep>0.5</intercommand_sleep>
+		</profile>
+	</profiles>
+
+	<!-- Parameter lists. Default values of the parameters.
+	     Those can be overwritten from command line one by one.
+
+		  The meaning of the parameters is not set. It depend on the script author to choose 
+		  the right parameter names and format as needed.
+
+		  Parameters can be also modified or added as a side effect of commands.
+
+		  Attribute "type" can be either "str" or "list" (if it is empty, the it is "str").
+		  Type "str" is simple string and the whole "value" attribute is saved to parameter
+		  called by "name" attributed. Type "list" creates a list of strings and it is read
+		  from attribute "value" where the first character is identified as delimiter and 
+		  the rest of the string is delimited using it.
+	-->
+	<plists>
+		<parameters name="main">
+			<param name="test" value="1" />
+			<param name="npus" value=",0,1" type="list" />
+		</parameters>
+	</plists>
+
+	<!-- MAIN PART of the XML file
+	     This contains all the cycles that might be executed
+	-->
+	<cycles>
+		<!-- The main cycle in this script called "generic". It has the name and description 
+		     in its attributes so it can be see when running the script.py with -list option.
+
+			  The default profile is "main" (can be overriden from command line) and the default
+			  parameter list is "main" (different namespace) and this cannot be changed from 
+			  command line. But the parameters themself can be added or overwrite by -param command.
+		-->
+		<cycle name="generic" desc="Collects generic health outputs for the device." profile="main" parameters="main">
+			<!-- Simple element is just a simple command execution. The text of this element contains 
+			     the command to be executed. 
+
+				  Context is "global" is not specified, other options are "mgmt_vdom" and "vdom".
+				  "mgmt_vdom" means to execute in the VDOM that is recognized as management vdom,
+				  and the "vdom" means that the VDOM specific in "vdom" attribute is used.
+
+				  The parameters can be used as a part of the command. They are in the format of
+				  ${name}. If this is found in the command, it will be replaced by the value of
+				  the parameter called "name". See example futher in this file.
+			-->
+			<simple                           >get sys stat                         </simple>
+			<simple context="global"          >get sys perf stat                    </simple>
+			<simple context="mgmt_vdom"       >diag firewall packet distribution    </simple>
+			<simple context="vdom" vdom="root">diag snmp ip frags                   </simple>
+
+			<!-- Run the parser called "ProcessStat". Some parsers expect input parameters and some not.
+			     If a parser expect it, it muse be provided in <input> element.
+
+				  The child element of <input> can be <static> like here to specify the value manually,
+				  or <parameter> which can be seen futher, which uses one of the global parameters.
+				  Both of them contain attribute "type" which can be either "int" or "str", and it
+				  will be converted correctly (including lists) before the parsers is called.
+			-->
+			<parser name="ProcessStat">
+				<input>
+					<static value="1" type='int'/> 
+				</input>
+			</parser>
+
+			<!-- Element "subcycle" allows to call another cycle. Be aware that the sub-cycle inherits
+			     the profile and parameter list of the main cycle (even if it has its own definition).
+			-->
+			<subcycle name="ipse_cpu" />
+
+			<!-- For writing this XML file and testing, following debug commands can be used:
+			     - "dump_params" - print the current parameters
+			-->
+			<dump_params />
+		</cycle>
+
+
+
+		<!-- Completely separate cycle
+		     In this case it is called as a subcycle from the "generic" cycle.
+		-->
+		<cycle name="ipse_cpu" desc="Collects CPU utilization statistics for running IPS engine.">
+			<!-- This is another example of calling the parser, but this one does not expect any
+			     input parameters.
+
+				  On the other side, we want to store the output of the parser. Usually parsers 
+				  return the object usable mainly in the programming language and it would not
+				  be possible to work with it here, so the parser can optionally implement 
+				  function called "simple_value" which extract the specific information from
+				  the returned object (based on "type" attribute) and save it to parameter 
+				  identified by the "use" attribute). It is up to the parser to return either
+				  string or list. To know the possible types, the source code must be checked
+				  at this moment.
+			-->
+			<parser name="IPSSummary">
+				<store>
+					<param type="ipse_pids_all" use="pids" />
+				</store>
+			</parser>
+
+			<!-- In this case it is not so important that this is a parser, but it imporant
+			     that we use the input parameter based on the output of the previous parser.
+				  Previously we saved PIDs of all IPS Engines in the list-type parameter "pids".
+				  The same list we use now to call the "ProcessStat" parser.
+			-->
+			<parser name="ProcessStat">
+				<input>
+					<parameter name="pids" type='int' />
+				</input>
+			</parser>
+
+			<!-- Foreach is a construction that allows to specify the list-type parameter
+			     and run repeat its content for each element.
+
+				  The name of the list is in "list" attribute and the current element
+				  will be stored in the parameter specified by "use" attribute every cycle.
+
+				  The Simple element inside the foreach element shows how to use parameters
+				  to construct the commands.
+			-->
+			<foreach list="pids" use="pid">
+				<simple>fnsysctl cat /proc/${pid}/stack</simple>
+			</foreach>
+
+			<!-- This is another example of simple command which uses a parameters as 
+			     a part of itself. 
+
+				  I use this to verify the -param option given on the command line works
+				  (so the command line can control this execution).
+			-->
+			<simple>diag test app ipsm ${test}</simple>
+		</cycle>
+	</cycles>
+</fortimonitor_scriptfile>
