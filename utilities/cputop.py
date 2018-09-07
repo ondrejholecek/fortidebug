@@ -126,7 +126,12 @@ def do(sshc, pid_group_count, collect_time, max_lines, sort_by, process_name, cp
 def print_formatted(util, overall_cpus, top, last_time, sortby, filters_applied):
 	cnt = 0
 
-	print "\x1b[2J\x1b[H\033[1mCPU per process utilization    (written by Ondrej Holecek <oholecek@fortinet.com>)\033[0m"
+	if os.name == 'nt':
+		os.system('cls')
+		print "CPU per process utilization    (written by Ondrej Holecek <oholecek@fortinet.com>)"
+	else:
+		print "\x1b[2J\x1b[H\033[1mCPU per process utilization    (written by Ondrej Holecek <oholecek@fortinet.com>)\033[0m"
+
 	print prepend_timestamp("Overall CPU utilization: %3.1f %% user, %3.1f %% system, %3.1f %% idle" % (
 		overall_cpus['user'], overall_cpus['system'], overall_cpus['idle'],
 	), last_time, 'pcpu')
