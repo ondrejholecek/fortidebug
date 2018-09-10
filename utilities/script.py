@@ -15,6 +15,7 @@ import sys
 import copy
 import time
 import json
+import requests
 
 sshc, args = ssh([
 	{ 'name':'--cycle-time',   'type':int, 'default':5,  'help':'How long should each cycle take' },
@@ -76,8 +77,17 @@ class Script:
 		self.load()
 
 	def load(self):
-		e = xml.etree.ElementTree.parse(self.filename).getroot()
-	
+		# is it a local file (no prefix or "file://") or remote file (*://)?
+		g = re.search("^(\S+)://(.*)$", self.filename)
+		if g == None:
+			e = xml.etree.ElementTree.parse(self.filename).getroot()
+		elif g.group(1) == 'file':
+			e = xml.etree.ElementTree.parse(g.group(2)).getroot()
+		else:
+			r = requests.get(self.filename)
+			if r.status_code != 200: raise MyException("Unable to download file '%s'" % (self.filename,))
+			e = xml.etree.ElementTree.fromstring(r.text)
+			
 		# verify we can work with this file
 		if e.tag != "fortimonitor_scriptfile":
 			raise MyException("The file '%s' is not FortiMonitor script file" % (self.filename,))
@@ -204,6 +214,10 @@ class Script:
 				raise MyException("Cannot find cycle '%s'" % (args.cycle,))
 	
 			self.do_cycle(c)
+
+		else:
+			print >>sys.stderr, "Nothing to do. Specify the cycle name with '--cycle' option or use '--list' option to find out the cycle name."
+			sys.exit(1)
 
 	def do_cycle(self, c):
 		# if there is a profile name we will use it, otherwise the default profile is used
