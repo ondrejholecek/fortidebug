@@ -8,6 +8,7 @@ from lib.SSHCommands import SSHCommands
 import argparse
 import sys
 import time
+import getpass
 
 def ssh(args=(), manual=''):
 	parser = argparse.ArgumentParser(description='FortiMonitor')
@@ -16,6 +17,7 @@ def ssh(args=(), manual=''):
 	parser.add_argument('--host', required=True, help='FortiGate hostname or IP address')
 	parser.add_argument('--user', default="admin", help='User name to log in as, default "admin"')
 	parser.add_argument('--password', default="", help='Password to log in with, default empty')
+	parser.add_argument('--askpass', default=False, action="store_true", help='Ask for password on standard input')
 	parser.add_argument('--credfile', default=None, help='File to read the credentials from - 1st line username, 2nd line password')
 	parser.add_argument('--port', default=22, type=int, help='SSH port, default 22')
 	parser.add_argument('--time-format', default='human-with-offset', choices=['human-with-offset', 'human', 'timestamp', 'iso'], help='Format of the date and time')
@@ -42,6 +44,9 @@ def ssh(args=(), manual=''):
 		with open(args.credfile, "r") as f:
 			args.user     = f.readline().strip("\n")
 			args.password = f.readline().strip("\n")
+	
+	elif args.askpass:
+		args.password = getpass.getpass("Password for %s@%s: " % (args.user, args.host,))
 	
 	sshc = SSHCommands(args.host, args.user, args.password, args.port, args.ignore_ssh_key)
 
