@@ -16,6 +16,7 @@ import copy
 import time
 import json
 import requests
+import datetime
 
 sshc, args = ssh([
 	{ 'name':'--cycle-time',   'type':int, 'default':5,  'help':'How long should each cycle take' },
@@ -241,10 +242,14 @@ class Script:
 		# do not check any attributes of 'c' because it can be anything!
 
 		for child in c:
-			self.last_command_time = ParserCurrentTime(self.sshc).get()
+			self.last_command_time      = ParserCurrentTime(self.sshc).get()
+			self.last_command_time_real = time.time()
 
 			if child.tag == 'simple':
 				self.do_simple_command(child, profile, params)
+
+			elif child.tag == 'continuous':
+				self.do_continuous_command(child, profile, params)
 
 			elif child.tag == 'foreach':
 				self.do_foreach(child, profile, params)
@@ -265,7 +270,7 @@ class Script:
 				time.sleep(profile['intercommand_sleep'])
 
 
-	def do_simple_command(self, cmd, profile, params):
+	def element_get_context(self, cmd, profile, params):
 		vdom    = None
 	
 		if 'context' in cmd.attrib:
@@ -275,13 +280,16 @@ class Script:
 				vdom    = ''
 			elif cmd.attrib['context'] == 'vdom':
 				if 'vdom' not in cmd.attrib:
-					raise MyException("Simple command: vdom context but no vdom name for '%s'" % (cmd.text,))
+					raise MyException("Vdom context present but no vdom name for '%s'" % (cmd.text,))
 	
 				vdom    = cmd.attrib['vdom']
 			else:
-				raise MyException("Simple command: unknown context '%s'" % (cmd.attrib['context'],))
-	
-		fortios_cmd = cmd.text.strip(' ')
+				raise MyException("Unknown context '%s'" % (cmd.attrib['context'],))
+
+		return vdom
+
+	def element_get_command(self, cmd, profile, params):
+		fortios_cmd = cmd.text.strip()
 
 		# replace parameters
 		regex = re.compile('^(.*?)\${(.+?)}(.*)$')
@@ -296,9 +304,70 @@ class Script:
 
 			fortios_cmd = g.group(1) + v + g.group(3)
 
+		return fortios_cmd
+
+	def do_simple_command(self, cmd, profile, params):
+		
+		vdom = self.element_get_context(cmd, profile, params)
+		fortios_cmd = self.element_get_command(cmd, profile, params)
+	
 		# run the command
 		result = sshc.clever_exec(fortios_cmd, vdom)
 		self.save_result(fortios_cmd, vdom, result, self.last_command_time)
+
+	def do_continuous_command(self, cmd, profile, params):
+		
+		vdom = self.element_get_context(cmd, profile, params)
+		fortios_cmd = self.element_get_command(cmd, profile, params)
+
+		# continuous parameters
+		for tmp in ('separator', 'timeout', 'quit'):
+			if tmp not in cmd.attrib:
+				raise MyException("Continuous_command: attribute '%s' missing" % (tmp,))
+
+		sep  = cmd.attrib['separator']
+		quit = cmd.attrib['quit'].decode('unicode_escape')
+
+		tmo = int(cmd.attrib['timeout'])
+		end_time = time.time() + tmo
+
+		if 'ignore' in cmd.attrib:
+			ign = cmd.attrib['ignore'].decode('unicode_escape')
+		else:
+			ign = None
+
+		# prepare sub-functions
+		def sub_divide(data, cache):
+			if ign != None:
+				data = data.replace(ign, '')
+
+			s = data.split(sep)
+			if len(s) == 1:  # not found
+				return (None, data)
+
+			elif len(s) == 2: # found one, but may not be finished yet
+				return (None, data)
+
+			else:
+				result = []
+				for i in range(len(s)-1):
+					if len(s[i]) == 0: continue
+					result.append("%s%s" % (sep, s[i],))
+
+				rest = sep+s[-1]
+				return (result, rest)
+					
+		def sub_result(data, cache):
+			real_diff = time.time() - self.last_command_time_real
+			adj_time  = (self.last_command_time + datetime.timedelta(seconds=real_diff)).replace(microsecond=0)
+			self.save_result(fortios_cmd, vdom, data, adj_time)
+
+		def sub_exit(cache):
+			if time.time() > end_time: return quit
+			else: return None
+	
+		# run the command
+		sshc.continuous_exec(fortios_cmd, sub_divide, sub_result, sub_exit, {'cache':{}}, vdom)
 
 	def do_foreach(self, cmd, profile, params):
 		for tmp in ('list', 'use'):

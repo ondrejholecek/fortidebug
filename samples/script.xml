@@ -67,6 +67,23 @@
 			<simple context="mgmt_vdom"       >diag firewall packet distribution    </simple>
 			<simple context="vdom" vdom="root">diag snmp ip frags                   </simple>
 
+			<!-- Continuous commands are a little bit special because they run on FortiOS until 
+			     manually terminated. Instead of <simple> we need to use <continuous> and specify 
+				  how to recognize partial results. Attribute "timeout" specifies how long the command
+				  will run and the attribute "quit" contains the text to send when terminating.
+
+				  There is also an optional attribute "ignore" that contains the character
+				  that will be completely ignored from the outut.
+
+				  Attributes "ignore" and "quit" can contain escape sequences.
+			-->
+			<continuous separator="   CPU [" timeout="10" ignore="\x1b[H\x1b[J" quit="q">
+				diag sys top-summary "-i 1 -s mem"
+			</continuous>
+			<continuous separator="Run Time:" timeout="10" ignore="\x1b[H\x1b[J" quit="q">
+				diag sys top 1 30
+			</continuous>
+
 			<!-- Run the parser called "ProcessStat". Some parsers expect input parameters and some not.
 			     If a parser expect it, it muse be provided in <input> element.
 
