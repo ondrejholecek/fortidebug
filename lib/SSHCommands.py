@@ -186,6 +186,9 @@ class SSHCommands:
 				for r in result:
 					result_callback(r, **args)
 
-			# show we finish?
-			if exit_callback(**args):
+			# should we finish?
+			ex = exit_callback(**args)
+			if ex != None:
+				self.channel.send(ex)
+				self.read_until_prompt()
 				break
