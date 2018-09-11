@@ -57,13 +57,13 @@ class ParserWADSummary(EasyParser):
 
 	def simple_value(self, result, name):
 		if name == 'wad_contexts_workers':
-			return [ "2%i%02i" % (e['type_id'], e['index'],) for e in result if e['type'] in ('worker', 'wanopt')]
+			return [ ("2%i%02i" % (e['type_id'], e['index'],), e['pid']) for e in result if e['type'] in ('worker', 'wanopt')]
 		elif name == 'wad_contexts_managers':
-			return [ "2%i%02i" % (e['type_id'], e['index'],) for e in result if e['type'] in ('manager')]
+			return [ ("2%i%02i" % (e['type_id'], e['index'],), e['pid']) for e in result if e['type'] in ('manager')]
 		elif name == 'wad_contexts_dispatchers':
-			return [ "2%i%02i" % (e['type_id'], e['index'],) for e in result if e['type'] in ('dispatcher')]
+			return [ ("2%i%02i" % (e['type_id'], e['index'],), e['pid']) for e in result if e['type'] in ('dispatcher')]
 		elif name == 'wad_contexts_informers':
-			return [ "2%i%02i" % (e['type_id'], e['index'],) for e in result if e['type'] in ('informer')]
+			return [ ("2%i%02i" % (e['type_id'], e['index'],), e['pid']) for e in result if e['type'] in ('informer')]
 
 		else:
 			raise Exception("Unknown simple value name")
