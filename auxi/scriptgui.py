@@ -182,7 +182,7 @@ class App(tk.Frame):
 
 	def start(self):
 		error = False
-		cmdline = "c:\\python27\\python.exe c:\\fortimonitor\\utilities\\script.py "
+		cmdline = "..\\utilities\\script.py "
 
 		optionals = ('password',)
 		for k in ('host', 'port', 'username', 'password', 'url', 'cycle', 'profile', 'output'):
