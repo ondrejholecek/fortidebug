@@ -35,12 +35,20 @@
 				</store>
 			</parser>
 
-			<merge name="wad_contexts_all">
+			<merge name="wad_pids_all" positions="1">
 				<param name="wad_contexts_managers"/>
 				<param name="wad_contexts_dispatchers"/>
 				<param name="wad_contexts_workers"/>
 				<param name="wad_contexts_informers"/>
 			</merge>
+
+			<parser name="DiagSysTop">
+				<input>
+					<static value="1" type="int"/>
+					<parameter name="wad_pids_all" type="int"/>
+					<static value="pid"/>
+				</input>
+			</parser>
 
 			<foreach list="wad_contexts_managers" name="ctx pid">
 				<set name=">wad:process">manager:${pid} (${ctx})</set>

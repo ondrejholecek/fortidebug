@@ -167,6 +167,14 @@
 			<!-- We can also merge multiple variables into one.
 			     (In this example parameters 'pids' are just doubled, but different 
 				   name would make more sense.)
+			     
+				  There can be optional attribute "positions" containing space separated
+				  numbers which are indexes to positions in the inner list to include.
+				  If there is just one position, the list if "flat-ed".
+				  If there is no "possitions" attribute, all positionins are merged.
+
+				  Another option attribute is 'type' which can be either 'str' or 'int',
+				  in that case each entry in the inner list is converted accordingly.
 			-->
 			<merge name="merged">
 				<param name="pids" />

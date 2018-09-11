@@ -527,13 +527,56 @@ class Script:
 			if tmp not in cmd.attrib:
 				raise MyException("Merge: attribute '%s' missing" % (tmp,))
 
+		# we may only choose some positions to include
+		pos = None
+		if 'positions' in cmd.attrib:
+			pos = []
+			for p in cmd.attrib['positions'].split(' '):
+				try:
+					pos.append(int(p))
+				except ValueError:
+					raise MyException("Merge: param 'positions' must contain numbers")
+
+		# convert to specific type?
+		ctype = None
+		if 'type' in cmd.attrib:
+			if cmd.attrib['type'] == 'int':
+				ctype = int
+			elif cmd.attrib['type'] == 'str':
+				ctype = str
+			else:
+				raise MyException("Merge: unknown type conversion '%s'" % (cmd.attrib['type'],))
+
+		#
 		merge = []
 		for p in cmd.findall("param"):
 			if 'name' not in p.attrib:
 				raise MyException("Merge: param element has no 'name' attribute")
 
 			if p.attrib['name'] in params:
-				merge += params[p.attrib['name']]
+				if pos == None:
+					merge += params[p.attrib['name']]
+				else:
+					for var in params[p.attrib['name']]:
+						to_merge = []
+						for pi in pos:
+							try:
+								if ctype == None:
+									to_merge.append( var[pi] )
+								else:
+									try:
+										to_merge.append( ctype(var[pi]) )
+									except ValueError:
+										raise MyException("Merge: unable to convert '%s' to %s" % (var[pi], str(ctype),))
+
+							except IndexError:
+								print var
+								raise MyException("Merge: no such position %i" % (pi,))
+
+						if len(to_merge) == 1:
+							merge += to_merge
+						else:
+							merge += (tuple(to_merge),)
 			else:
 				print >>sys.stderr, "Warning: unknown parameter '%s' in merge to '%s', ignoring" % (p.attrib['name'], cmd.attrib['name'],)
 
