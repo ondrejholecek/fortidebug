@@ -31,6 +31,9 @@
 		  called by "name" attributed. Type "list" creates a list of strings and it is read
 		  from attribute "value" where the first character is identified as delimiter and 
 		  the rest of the string is delimited using it.
+
+		  If the parameter name starts with ">", this parameters will be includes in the
+		  'parameters' section of the resuting json (without '>' character).
 	-->
 	<plists>
 		<parameters name="main">
@@ -150,12 +153,21 @@
 				  The name of the list is in "list" attribute and the current element
 				  will be stored in the parameter specified by "use" attribute every cycle.
 
+				  If the parameter is a list of strings, more parameters names is needed and
+				  each entry will be stored in one. In that case, parameter names are
+				  divided by single space.
+
 				  The Simple element inside the foreach element shows how to use parameters
 				  to construct the commands.
 			-->
 			<foreach list="pids" use="pid">
 				<simple>fnsysctl cat /proc/${pid}/stack</simple>
 			</foreach>
+
+			<!-- We can set or unset any parameter in the middle of the script.
+			-->
+			<set name="hello">1</set>
+			<unset name="hello"/>
 
 			<!-- This is another example of simple command which uses a parameters as 
 			     a part of itself. 
