@@ -1,0 +1,81 @@
+<!-- 
+	FortiMonitor "script.py" XML input script.
+
+	This script contain the generic troubleshooting commands. There are many sections
+	and each of them have the relevant commands.
+-->
+
+<fortimonitor_scriptfile version="1">
+	<profiles>
+		<profile name="main">
+			<intercommand_sleep>0.5</intercommand_sleep>
+		</profile>
+	</profiles>
+
+	<plists>
+		<parameters name="main">
+		</parameters>
+	</plists>
+
+	<cycles>
+		<cycle name="ipsec" desc="IPSec VPN related output." profile="main" parameters="main">
+			<simple context="mgmt_vdom"    >get vpn ipsec stats crypto    </simple>
+			<simple context="mgmt_vdom"    >diag vpn ike counts           </simple>
+			<simple context="mgmt_vdom"    >diag vpn ike status summary   </simple>
+			<simple context="mgmt_vdom"    >diag vpn ike errors           </simple>
+		</cycle>
+
+		<cycle name="wad" desc="Explicit proxy related output." profile="main" parameters="main">
+			<parser name="WADSummary">
+				<store> 
+					<param type="wad_contexts_managers"    use="wad_contexts_managers"/> 
+					<param type="wad_contexts_dispatchers" use="wad_contexts_dispatchers"/> 
+					<param type="wad_contexts_workers"     use="wad_contexts_workers"/> 
+					<param type="wad_contexts_informers"   use="wad_contexts_informers"/> 
+				</store>
+			</parser>
+
+			<foreach list="wad_contexts_managers" use="ctx pid">
+				<set name=">wad:process">manager:${pid} (${ctx})</set>
+				<simple context="global"       >diag test app wad ${ctx}         </simple>
+				<simple context="global"       >diag test app wad 1              </simple>
+				<simple context="global"       >diag test app wad 2              </simple>
+				<simple context="global"       >diag test app wad 3              </simple>
+				<simple context="global"       >diag test app wad 4              </simple>
+				<simple context="global"       >diag test app wad 803            </simple>
+				<unset name=">wad:process"/>
+			</foreach>
+
+			<foreach list="wad_contexts_dispatchers" use="ctx pid">
+				<set name=">wad:process">dispatcher:${pid} (${ctx})</set>
+				<simple context="global"       >diag test app wad ${ctx}         </simple>
+				<simple context="global"       >diag test app wad 10             </simple>
+				<simple context="global"       >diag test app wad 11             </simple>
+				<simple context="global"       >diag test app wad 12             </simple>
+				<unset name=">wad:process"/>
+			</foreach>
+
+			<foreach list="wad_contexts_workers" use="ctx pid">
+				<set name=">wad:process">worker:${pid} (${ctx})</set>
+				<simple context="global"       >diag test app wad ${ctx}         </simple>
+				<simple context="global"       >diag test app wad 13             </simple>
+				<simple context="global"       >diag test app wad 22             </simple>
+				<simple context="global"       >diag test app wad 23             </simple>
+				<simple context="global"       >diag test app wad 25             </simple>
+				<simple context="global"       >diag test app wad 110            </simple>
+				<unset name=">wad:process"/>
+			</foreach>
+
+			<foreach list="wad_contexts_informers" use="ctx pid">
+				<set name=">wad:process">informer:${pid} (${ctx})</set>
+				<simple context="global"       >diag test app wad ${ctx}         </simple>
+				<simple context="global"       >diag test app wad 110            </simple>
+				<simple context="global"       >diag test app wad 112            </simple>
+				<simple context="global"       >diag test app wad 113            </simple>
+				<simple context="global"       >diag test app wad 114            </simple>
+				<unset name=">wad:process"/>
+			</foreach>
+		</cycle>
+
+	</cycles>
+</fortimonitor_scriptfile>
