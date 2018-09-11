@@ -54,6 +54,7 @@ class ScriptFile:
 				return
 
 			else:
+				self.real_url = r.url
 				try:
 					e = xml.etree.ElementTree.fromstring(r.text)
 					self.status_ok = True
@@ -127,7 +128,7 @@ class App(tk.Frame):
 
 		# Widget group - Script parameters
 		group_script = tk.LabelFrame(self, text="Script options", padx=5, pady=5)
-		self.create_input(group_script, 0, "Script URL:", "url", 50)
+		self.create_input(group_script, 0, "Script URL:", "url", 50, default="https://scripts.fortimonitor.com/global/latest.xml")
 
 		self.btn_load = tk.Button(group_script, text="Load", command=self.script_entered)
 		self.btn_load.grid(row=1, column=1, sticky="we")
@@ -157,6 +158,10 @@ class App(tk.Frame):
 		if not sf.status_ok:
 			tkMessageBox.showerror("Error", sf.message)
 			return
+
+		self.inputs['url']['value'].set(sf.real_url)
+		self.inputs['url']['input'].config(state="disabled")
+		self.btn_load.config(state="disabled")
 
 		self.inputs['cycle']['value'].set('')
 		self.inputs['cycle']['input']['menu'].delete(0, 'end')
