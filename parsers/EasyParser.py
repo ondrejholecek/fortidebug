@@ -17,5 +17,9 @@ class EasyParser:
 	def get(self):
 		raise Exception("Function get must be implemented by parser")
 	
+	# Return:
+	# - simple list - each element can be assign to one variable in foreach cycle
+	# - list of tuples - in foreach cycle each element of the inner tuple will be
+	#                    assigned to its variable in each iteration 
 	def simple_value(self, result, name):
 		raise Exception("Function get must be implemented by parser")
