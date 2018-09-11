@@ -8,6 +8,7 @@ import re
 import xml.etree.ElementTree
 import requests
 import time
+import paramiko
 
 class ScriptFile:
 	def __init__(self, url):
@@ -140,6 +141,8 @@ class App(tk.Frame):
 		self.create_input(group_fgt, 1, "Port:", "port", 50, default="22")
 		self.create_input(group_fgt, 2, "Usernane:", "username")
 		self.create_input(group_fgt, 3, "Password:", "password", show="*")
+		self.btn_test = tk.Button(group_fgt, text="Test connectivity", command=self.test_connect)
+		self.btn_test.grid(row=4, column=0, columnspan=2, sticky="we")
 		group_fgt.grid(row=0, column=0, padx=10, pady=10, sticky="WE")
 
 		# Widget group - Script parameters
@@ -169,6 +172,32 @@ class App(tk.Frame):
 		self.btn_start["text"] = "Start"
 		self.btn_start["command"] =  self.start
 		self.btn_start.grid(row=3, columnspan=2, sticky="nswe")
+
+	def test_connect(self):
+		host = self.inputs['host']['value'].get()
+		username = self.inputs['username']['value'].get()
+		password = self.inputs['password']['value'].get()
+
+		try:
+			port = int(self.inputs['port']['value'].get())
+		except ValueError:
+			self.inputs['port']['value'].set("22")
+			port = 22
+
+		client = paramiko.SSHClient()
+		client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
+		try:
+			client.connect(host, username=username, password=password, port=port, timeout=5, banner_timeout=10, auth_timeout=10)
+		except Exception, e:
+			tkMessageBox.showerror("Error", str(e))
+		else:
+			self.inputs['host']['input'].config(state="disabled")
+			self.inputs['username']['input'].config(state="disabled")
+			self.inputs['password']['input'].config(state="disabled")
+			self.inputs['port']['input'].config(state="disabled")
+			tkMessageBox.showinfo("OK", "Connected successfully")
+			
+		client.close()
 
 	def script_entered(self):
 		sf = ScriptFile(self.inputs['url']['value'].get())
