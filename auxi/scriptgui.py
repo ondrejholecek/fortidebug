@@ -100,21 +100,29 @@ class App(tk.Frame):
 
 		self.winfo_toplevel().title("FortiMonitor ScriptGUI")
 
-	def create_input(self, parent, row, label, name, width=None, show=None, default=None, isselect=False):
+	def create_input(self, parent, row, label, name, width=None, show=None, default=None, isselect=False, islist=False):
 		self.inputs[name] = {}
 
 		self.inputs[name]['label'] = tk.Label(parent, text=label, width=10, anchor="e")
 		self.inputs[name]['label'].grid(row=row, column=0, sticky="W")
 
 		self.inputs[name]['value'] = tk.StringVar()
-		if not isselect:
-			if default != None: self.inputs[name]['value'].set(default)
-			self.inputs[name]['input'] = tk.Entry(parent, width=width, textvar=self.inputs[name]['value'], show=show)
-		else:
+		if isselect:
 			self.inputs[name]['value'].set(default)
 			self.inputs[name]['input'] = tk.OptionMenu(parent, self.inputs[name]['value'], default)
-
-		self.inputs[name]['input'].grid(row=row, column=1, sticky="WE")
+			self.inputs[name]['input'].grid(row=row, column=1, sticky="WE")
+		elif islist:
+			f = tk.Frame(parent)
+			scrollbar = tk.Scrollbar(f, orient=tk.VERTICAL)
+			self.inputs[name]['input'] = tk.Listbox(f, selectmode=tk.MULTIPLE, exportselection=0, height=10, yscrollcommand=scrollbar.set, width=39)
+			self.inputs[name]['input'].grid(row=0, column=0, sticky="WE")
+			scrollbar.config(command=self.inputs[name]['input'].yview)
+			scrollbar.grid(row=0, column=1, sticky="NS")
+			f.grid(row=row, column=1, sticky="WE")
+		else:
+			if default != None: self.inputs[name]['value'].set(default)
+			self.inputs[name]['input'] = tk.Entry(parent, width=width, textvar=self.inputs[name]['value'], show=show)
+			self.inputs[name]['input'].grid(row=row, column=1, sticky="WE")
 
 	def createWidgets(self):
 
@@ -133,7 +141,7 @@ class App(tk.Frame):
 		self.btn_load = tk.Button(group_script, text="Load", command=self.script_entered)
 		self.btn_load.grid(row=1, column=1, sticky="we")
 
-		self.create_input(group_script, 2, "Cycle name:", "cycle", isselect=True)
+		self.create_input(group_script, 2, "Cycle name:", "cycle", islist=True)
 		self.create_input(group_script, 3, "Profile:", "profile", isselect=True, default="<default>")
 		self.create_input(group_script, 4, "Cycle time:", "time", default="30")
 		group_script.grid(row=1, column=0, padx=10, pady=10, sticky="WE")
@@ -164,11 +172,16 @@ class App(tk.Frame):
 		self.inputs['url']['input'].config(state="disabled")
 		self.btn_load.config(state="disabled")
 
-		self.inputs['cycle']['value'].set('')
-		self.inputs['cycle']['input']['menu'].delete(0, 'end')
-		for choice in sf.cycles:
-			self.inputs['cycle']['input']['menu'].add_command(label=choice, command=tk._setit(self.inputs['cycle']['value'], choice))
 		self.inputs['cycle']['input'].config(state="normal")
+		for choice in sf.cycles:
+			self.inputs['cycle']['input'].insert(tk.END, choice)
+		self.inputs['cycle']['input'].insert(tk.END, "test1")
+		self.inputs['cycle']['input'].insert(tk.END, "test2")
+		self.inputs['cycle']['input'].insert(tk.END, "test3")
+		self.inputs['cycle']['input'].insert(tk.END, "test4")
+		self.inputs['cycle']['input'].insert(tk.END, "test5")
+		self.inputs['cycle']['input'].insert(tk.END, "test6")
+		self.inputs['cycle']['input'].insert(tk.END, "test7")
 
 		self.inputs['profile']['value'].set('<default>')
 		for choice in sf.profiles:
@@ -188,10 +201,10 @@ class App(tk.Frame):
 
 	def start(self):
 		error = False
-		cmdline = "..\\utilities\\script.py "
+		cmdline = os.path.join("..", "utilities", "script.py") + " "
 
 		optionals = ('password',)
-		for k in ('host', 'port', 'username', 'password', 'url', 'cycle', 'profile', 'output', 'time'):
+		for k in ('host', 'port', 'username', 'password', 'url', 'profile', 'output', 'time'):
 			v = self.inputs[k]['value'].get()
 			if (len(v) == 0 or v == "<click to select>") and k not in optionals:
 				error = True
@@ -209,11 +222,24 @@ class App(tk.Frame):
 			elif k == 'output': cmdline += " --output \"" + v + "\""
 			elif k == 'time': cmdline += " --cycle-time " + v
 
+		# cycles
+		cycles = self.inputs['cycle']['input'].curselection()
+		if len(cycles) == 0:
+			error = True
+			self.inputs['cycle']['input'].config(background="#ffd8dd")
+		else:
+			self.inputs['cycle']['input'].config(background="white")
+
+		for cycle in cycles:
+			cmdline += " --cycle " + self.inputs['cycle']['input'].get(cycle)
+
+		#
 		if error:
 			tkMessageBox.showerror("Error", "Please fill all the mandatory inputs.")
 			return
 
 		cmdline += " --ignore-ssh-key"
+		#print cmdline
 
 		self.btn_start.config(text='Running')
 		self.btn_start.config(state='disabled')
