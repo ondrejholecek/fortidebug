@@ -262,6 +262,12 @@ class Script:
 			elif child.tag == 'parser':
 				self.do_parser(child, profile, params)
 	
+			elif child.tag == 'set':
+				self.do_set(child, profile, params)
+	
+			elif child.tag == 'unset':
+				self.do_unset(child, profile, params)
+	
 			elif child.tag == 'dump_params':
 				self.do_dump_params(child, profile, params)
 	
@@ -304,7 +310,7 @@ class Script:
 			else:
 				v = params[g.group(2)]
 
-			fortios_cmd = g.group(1) + v + g.group(3)
+			fortios_cmd = g.group(1) + str(v) + g.group(3)
 
 		return fortios_cmd
 
@@ -315,7 +321,7 @@ class Script:
 	
 		# run the command
 		result = sshc.clever_exec(fortios_cmd, vdom)
-		self.save_result(fortios_cmd, vdom, result, self.last_command_time)
+		self.save_result(fortios_cmd, vdom, result, self.last_command_time, params)
 
 	def do_continuous_command(self, cmd, profile, params):
 		
@@ -362,7 +368,7 @@ class Script:
 		def sub_result(data, cache):
 			real_diff = time.time() - self.last_command_time_real
 			adj_time  = (self.last_command_time + datetime.timedelta(seconds=real_diff)).replace(microsecond=0)
-			self.save_result(fortios_cmd, vdom, data, adj_time)
+			self.save_result(fortios_cmd, vdom, data, adj_time, params)
 
 		def sub_exit(cache):
 			if time.time() > end_time: return quit
@@ -382,19 +388,34 @@ class Script:
 			raise MyException("Foreach: parameter '%s' is not a list")
 
 		# save original value
-		original = None
-		if cmd.attrib['use'] in params: original = params[cmd.attrib['use']]
+		uses      = cmd.attrib['use'].split(' ')
+		originals = {}
+		for use in uses:
+			if use in params: originals[use] = params[use]
+			else: originals[use] = None
 
 		# run the cycle
 		for it in params[cmd.attrib['list']]:
-			params[cmd.attrib['use']] = it
+			if type(it) == tuple:
+				i = 0
+				for use in uses:
+					try:
+						params[use] = it[i]
+					except IndexError:
+						raise MyException("Foreach: not enough parameters to use")
+
+					i += 1
+			else:
+				params[cmd.attrib['use']] = it
+
 			self.do_commands(cmd, profile, params)
 
 		# restore original
-		if original == None:
-			del params[cmd.attrib['use']]
+		for use in uses:
+			if originals[use] == None:
+				del params[use]
 		else:
-			params[cmd.attrib['use']] = original
+			params[use] = originals[use]
 
 	def do_subcycle(self, cmd, profile, params):
 		for tmp in ('name',):
@@ -470,7 +491,7 @@ class Script:
 		except Exception, e:
 			raise MyException("Parser: unable to call parser '%s': '%s'" % (pname, str(e),))
 
-		self.save_result("Parser:%s:%s" % (pname, iparams,), None, result, self.last_command_time)
+		self.save_result("Parser:%s:%s" % (pname, iparams,), None, result, self.last_command_time, params)
 
 		# if we want to store some parameters, do it
 		store = cmd.find('store')
@@ -483,16 +504,37 @@ class Script:
 				simple = parser.simple_value(result, sparam.attrib['type'])
 				params[sparam.attrib['use']] = simple
 
-	def do_dump_params(self, cmd, profile, params):
-		self.save_result("internal:dump_params", None, params, self.last_command_time)
+	def do_set(self, cmd, profile, params):
+		for tmp in ('name',):
+			if tmp not in cmd.attrib:
+				raise MyException("Set: attribute '%s' missing" % (tmp,))
 
-	def save_result(self, command, vdom, output, etime):
+		params[cmd.attrib['name']] = self.element_get_command(cmd, profile, params)
+
+	def do_unset(self, cmd, profile, params):
+		for tmp in ('name',):
+			if tmp not in cmd.attrib:
+				raise MyException("Set: attribute '%s' missing" % (tmp,))
+
+		if cmd.attrib['name'] in params:
+			del params[cmd.attrib['name']] 
+
+	def do_dump_params(self, cmd, profile, params):
+		self.save_result("internal:dump_params", None, params, self.last_command_time, params)
+
+	def save_result(self, command, vdom, output, etime, params):
+		rp = {}
+		for p in params.keys():
+			if p[0] != '>': continue
+			else: rp[p[1:]] = params[p]
+
 		if self.output != None:
 			tmp = {
 				'command': command,
 				'context': vdom,
 				'output' : output,
 				'time': str(etime),
+				'parameters' : rp,
 			}
 			self.output.write(json.dumps(tmp) + "\n")
 			self.output.flush()
