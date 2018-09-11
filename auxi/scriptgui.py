@@ -120,28 +120,29 @@ class App(tk.Frame):
 
 		# Widget group - FortiGate connection settings
 		group_fgt = tk.LabelFrame(self, text="FortiGate", padx=5, pady=5)
-		self.create_input(group_fgt, 0, "Host:", "host", 50)
-		self.create_input(group_fgt, 1, "Port:", "port", 50, default="22")
+		self.create_input(group_fgt, 0, "Host:", "host", 40)
+		self.create_input(group_fgt, 1, "Port:", "port", 40, default="22")
 		self.create_input(group_fgt, 2, "Usernane:", "username")
 		self.create_input(group_fgt, 3, "Password:", "password", show="*")
 		group_fgt.grid(row=0, column=0, padx=10, pady=10, sticky="WE")
 
 		# Widget group - Script parameters
 		group_script = tk.LabelFrame(self, text="Script options", padx=5, pady=5)
-		self.create_input(group_script, 0, "Script URL:", "url", 50, default="https://scripts.fortimonitor.com/global/latest.xml")
+		self.create_input(group_script, 0, "Script URL:", "url", 40, default="https://scripts.fortimonitor.com/global/latest.xml")
 
 		self.btn_load = tk.Button(group_script, text="Load", command=self.script_entered)
 		self.btn_load.grid(row=1, column=1, sticky="we")
 
 		self.create_input(group_script, 2, "Cycle name:", "cycle", isselect=True)
 		self.create_input(group_script, 3, "Profile:", "profile", isselect=True, default="<default>")
+		self.create_input(group_script, 4, "Cycle time:", "time", default="30")
 		group_script.grid(row=1, column=0, padx=10, pady=10, sticky="WE")
 
 		self.inputs['cycle']['input'].config(state="disabled")
 		self.inputs['profile']['input'].config(state="disabled")
 
 		group_output = tk.LabelFrame(self, text="Save output", padx=5, pady=5)
-		self.create_input(group_output, 3, "Filename:", "output", default="<click to select>", width=50)
+		self.create_input(group_output, 3, "Filename:", "output", default="<click to select>", width=40)
 		group_output.grid(row=2, column=0, padx=10, pady=10, sticky="WE")
 
 		self.inputs['output']['input'].config(state="disabled")
@@ -190,7 +191,7 @@ class App(tk.Frame):
 		cmdline = "..\\utilities\\script.py "
 
 		optionals = ('password',)
-		for k in ('host', 'port', 'username', 'password', 'url', 'cycle', 'profile', 'output'):
+		for k in ('host', 'port', 'username', 'password', 'url', 'cycle', 'profile', 'output', 'time'):
 			v = self.inputs[k]['value'].get()
 			if (len(v) == 0 or v == "<click to select>") and k not in optionals:
 				error = True
@@ -206,6 +207,7 @@ class App(tk.Frame):
 			elif k == 'cycle': cmdline += " --cycle " + v 
 			elif k == 'profile' and v != "<default>": cmdline += " --profile " + v 
 			elif k == 'output': cmdline += " --output \"" + v + "\""
+			elif k == 'time': cmdline += " --cycle-time " + v
 
 		if error:
 			tkMessageBox.showerror("Error", "Please fill all the mandatory inputs.")
