@@ -19,7 +19,7 @@ import requests
 import datetime
 
 sshc, args = ssh([
-	{ 'name':'--cycle-time',   'type':int, 'default':5,  'help':'How long should each cycle take' },
+	{ 'name':'--cycle-time',   'type':int, 'default':30,  'help':'How long should each cycle take' },
 	{ 'name':'--script',       'required':True,  'help':'The XML file with commands to execute' },
 	{ 'name':'--list',         'default':False, 'action':'store_true',  'help':'List existing cycles and quit' },
 	{ 'name':'--cycle',        'default':None, 'action': 'append', 'help':'Run the specified cycle (can repeat)' },
