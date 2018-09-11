@@ -22,7 +22,7 @@ sshc, args = ssh([
 	{ 'name':'--cycle-time',   'type':int, 'default':5,  'help':'How long should each cycle take' },
 	{ 'name':'--script',       'required':True,  'help':'The XML file with commands to execute' },
 	{ 'name':'--list',         'default':False, 'action':'store_true',  'help':'List existing cycles and quit' },
-	{ 'name':'--cycle',        'default':None, 'help':'Run the specified cycle' },
+	{ 'name':'--cycle',        'default':None, 'action': 'append', 'help':'Run the specified cycle (can repeat)' },
 	{ 'name':'--profile',      'default':None, 'help':'Override the default profile name for the cycle' },
 	{ 'name':'--param',        'default':[], 'action':'append', 'help':'Override some parameters' },
 	{ 'name':'--output',       'default':None, 'help':'Name of the output file (.jsonl format)' },
@@ -32,8 +32,9 @@ This utility allows you to write and run custom commands and/or standard parsers
 
 The execution is controlled by the XML file (passed by "--script" option) which contains one or more "cycles".
 The "cycle" has a name and description and it contains the definition of the actions to take (like run
-simple command, run parser, etc.). At one time only once cycle can be executed and its name is passed 
-by "--cycle" option. To find all available cycle names, use option "--list" (together with "--script"). 
+simple command, run parser, etc.). One or more cycle names can be selected by "--cycle" option. If there are
+more cycles, they are exectuted in specified order and the "--cycle-time" option refers to the time of all
+selected cycles togeter. To find all available cycle names, use option "--list" (together with "--script"). 
 
 Format of the XML file and all its options is described in the sample XML file ("samples/script.xml").
 
@@ -210,11 +211,12 @@ class Script:
 			raise KeyboardInterrupt()
 	
 		elif self.cycle != None:
-			c = self.root.find("./cycles/cycle[@name='%s']" % (self.cycle,))
-			if c == None:
-				raise MyException("Cannot find cycle '%s'" % (args.cycle,))
+			for sc in self.cycle:
+				c = self.root.find("./cycles/cycle[@name='%s']" % (sc,))
+				if c == None:
+					raise MyException("Cannot find cycle '%s'" % (sc,))
 	
-			self.do_cycle(c)
+				self.do_cycle(c)
 
 		else:
 			print >>sys.stderr, "Nothing to do. Specify the cycle name with '--cycle' option or use '--list' option to find out the cycle name."
