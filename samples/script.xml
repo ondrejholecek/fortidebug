@@ -126,13 +126,13 @@
 				  be possible to work with it here, so the parser can optionally implement 
 				  function called "simple_value" which extract the specific information from
 				  the returned object (based on "type" attribute) and save it to parameter 
-				  identified by the "use" attribute). It is up to the parser to return either
+				  identified by the "name" attribute). It is up to the parser to return either
 				  string or list. To know the possible types, the source code must be checked
 				  at this moment.
 			-->
 			<parser name="IPSSummary">
 				<store>
-					<param type="ipse_pids_all" use="pids" />
+					<param type="ipse_pids_all" name="pids" />
 				</store>
 			</parser>
 
@@ -151,7 +151,7 @@
 			     and run repeat its content for each element.
 
 				  The name of the list is in "list" attribute and the current element
-				  will be stored in the parameter specified by "use" attribute every cycle.
+				  will be stored in the parameter specified by "name" attribute every cycle.
 
 				  If the parameter is a list of strings, more parameters names is needed and
 				  each entry will be stored in one. In that case, parameter names are
@@ -160,7 +160,7 @@
 				  The Simple element inside the foreach element shows how to use parameters
 				  to construct the commands.
 			-->
-			<foreach list="pids" use="pid">
+			<foreach list="pids" name="pid">
 				<simple>fnsysctl cat /proc/${pid}/stack</simple>
 			</foreach>
 

@@ -378,7 +378,7 @@ class Script:
 		sshc.continuous_exec(fortios_cmd, sub_divide, sub_result, sub_exit, {'cache':{}}, vdom)
 
 	def do_foreach(self, cmd, profile, params):
-		for tmp in ('list', 'use'):
+		for tmp in ('list', 'name'):
 			if tmp not in cmd.attrib:
 				raise MyException("Foreach: attribute '%s' missing" % (tmp,))
 
@@ -388,7 +388,7 @@ class Script:
 			raise MyException("Foreach: parameter '%s' is not a list")
 
 		# save original value
-		uses      = cmd.attrib['use'].split(' ')
+		uses      = cmd.attrib['name'].split(' ')
 		originals = {}
 		for use in uses:
 			if use in params: originals[use] = params[use]
@@ -406,7 +406,7 @@ class Script:
 
 					i += 1
 			else:
-				params[cmd.attrib['use']] = it
+				params[cmd.attrib['name']] = it
 
 			self.do_commands(cmd, profile, params)
 
@@ -497,12 +497,12 @@ class Script:
 		store = cmd.find('store')
 		if store != None:
 			for sparam in store.findall('param'):
-				for tmp in ('type', 'use'):
+				for tmp in ('type', 'name'):
 					if tmp not in sparam.attrib:
 						raise MyException("Parser: store attribute '%s' missing" % (tmp,))
 
 				simple = parser.simple_value(result, sparam.attrib['type'])
-				params[sparam.attrib['use']] = simple
+				params[sparam.attrib['name']] = simple
 
 	def do_set(self, cmd, profile, params):
 		for tmp in ('name',):

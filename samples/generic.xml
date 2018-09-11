@@ -28,14 +28,14 @@
 		<cycle name="wad" desc="Explicit proxy related output." profile="main" parameters="main">
 			<parser name="WADSummary">
 				<store> 
-					<param type="wad_contexts_managers"    use="wad_contexts_managers"/> 
-					<param type="wad_contexts_dispatchers" use="wad_contexts_dispatchers"/> 
-					<param type="wad_contexts_workers"     use="wad_contexts_workers"/> 
-					<param type="wad_contexts_informers"   use="wad_contexts_informers"/> 
+					<param type="wad_contexts_managers"    name="wad_contexts_managers"/> 
+					<param type="wad_contexts_dispatchers" name="wad_contexts_dispatchers"/> 
+					<param type="wad_contexts_workers"     name="wad_contexts_workers"/> 
+					<param type="wad_contexts_informers"   name="wad_contexts_informers"/> 
 				</store>
 			</parser>
 
-			<foreach list="wad_contexts_managers" use="ctx pid">
+			<foreach list="wad_contexts_managers" name="ctx pid">
 				<set name=">wad:process">manager:${pid} (${ctx})</set>
 				<simple context="global"       >diag test app wad ${ctx}         </simple>
 				<simple context="global"       >diag test app wad 1              </simple>
@@ -46,7 +46,7 @@
 				<unset name=">wad:process"/>
 			</foreach>
 
-			<foreach list="wad_contexts_dispatchers" use="ctx pid">
+			<foreach list="wad_contexts_dispatchers" name="ctx pid">
 				<set name=">wad:process">dispatcher:${pid} (${ctx})</set>
 				<simple context="global"       >diag test app wad ${ctx}         </simple>
 				<simple context="global"       >diag test app wad 10             </simple>
@@ -55,7 +55,7 @@
 				<unset name=">wad:process"/>
 			</foreach>
 
-			<foreach list="wad_contexts_workers" use="ctx pid">
+			<foreach list="wad_contexts_workers" name="ctx pid">
 				<set name=">wad:process">worker:${pid} (${ctx})</set>
 				<simple context="global"       >diag test app wad ${ctx}         </simple>
 				<simple context="global"       >diag test app wad 13             </simple>
@@ -66,7 +66,7 @@
 				<unset name=">wad:process"/>
 			</foreach>
 
-			<foreach list="wad_contexts_informers" use="ctx pid">
+			<foreach list="wad_contexts_informers" name="ctx pid">
 				<set name=">wad:process">informer:${pid} (${ctx})</set>
 				<simple context="global"       >diag test app wad ${ctx}         </simple>
 				<simple context="global"       >diag test app wad 110            </simple>
