@@ -164,6 +164,15 @@
 				<simple>fnsysctl cat /proc/${pid}/stack</simple>
 			</foreach>
 
+			<!-- We can also merge multiple variables into one.
+			     (In this example parameters 'pids' are just doubled, but different 
+				   name would make more sense.)
+			-->
+			<merge name="merged">
+				<param name="pids" />
+				<param name="pids" />
+			</merge>
+
 			<!-- We can set or unset any parameter in the middle of the script.
 			-->
 			<set name="hello">1</set>

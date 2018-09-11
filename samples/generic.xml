@@ -35,6 +35,13 @@
 				</store>
 			</parser>
 
+			<merge name="wad_contexts_all">
+				<param name="wad_contexts_managers"/>
+				<param name="wad_contexts_dispatchers"/>
+				<param name="wad_contexts_workers"/>
+				<param name="wad_contexts_informers"/>
+			</merge>
+
 			<foreach list="wad_contexts_managers" name="ctx pid">
 				<set name=">wad:process">manager:${pid} (${ctx})</set>
 				<simple context="global"       >diag test app wad ${ctx}         </simple>

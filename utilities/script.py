@@ -268,6 +268,9 @@ class Script:
 			elif child.tag == 'unset':
 				self.do_unset(child, profile, params)
 	
+			elif child.tag == 'merge':
+				self.do_merge(child, profile, params)
+	
 			elif child.tag == 'dump_params':
 				self.do_dump_params(child, profile, params)
 	
@@ -514,10 +517,27 @@ class Script:
 	def do_unset(self, cmd, profile, params):
 		for tmp in ('name',):
 			if tmp not in cmd.attrib:
-				raise MyException("Set: attribute '%s' missing" % (tmp,))
+				raise MyException("Unset: attribute '%s' missing" % (tmp,))
 
 		if cmd.attrib['name'] in params:
 			del params[cmd.attrib['name']] 
+
+	def do_merge(self, cmd, profile, params):
+		for tmp in ('name',):
+			if tmp not in cmd.attrib:
+				raise MyException("Merge: attribute '%s' missing" % (tmp,))
+
+		merge = []
+		for p in cmd.findall("param"):
+			if 'name' not in p.attrib:
+				raise MyException("Merge: param element has no 'name' attribute")
+
+			if p.attrib['name'] in params:
+				merge += params[p.attrib['name']]
+			else:
+				print >>sys.stderr, "Warning: unknown parameter '%s' in merge to '%s', ignoring" % (p.attrib['name'], cmd.attrib['name'],)
+
+		params[cmd.attrib['name']] = merge
 
 	def do_dump_params(self, cmd, profile, params):
 		self.save_result("internal:dump_params", None, params, self.last_command_time, params)
