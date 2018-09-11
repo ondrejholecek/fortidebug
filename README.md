@@ -26,37 +26,28 @@ an "Issue" here if you find such problem.
 
 ## Installing prerequisites
 
-These utilities are written in Python 2.7 and need Paramiko library.
+These utilities are written in Python 2.7 and need following libraries:
+- paramiko
+- requests
+- getpass
 
-### Windows 64bit
+### Windows 
 
-1. Download [Python 2.7 for Windows 64bit installer](https://www.python.org/ftp/python/2.7.15/python-2.7.15.amd64.msi) and install it.
-The default directory where it usually installs is "C:\Python27".
+The easiest way how to install on Windows is:
+- Download [the lastest compressed version](https://github.com/ondrejholecek/fortimonitor/archive/master.zip)
+- Extract it to its final location
+- Navigate to "init" sub-directory and double-click on "setup.bat"
 
-2. Download [Pip installer](https://bootstrap.pypa.io/get-pip.py) and doubleclick it to install. If that does not work for any 
-reason, you can install it manually with following command:
-
-```
-cd <directory where you downloaded get-pip.py>
-C:\Python27\python.exe get-pip.py
-```
-
-3. Install the FortiMonitor dependencies from command line with Pip:
-
-```
-C:\Python27\Scripts\pip.exe install paramiko
-```
-
-### Windows 32bit
-
-Same as Windows 64bit, but use [this Python 2.7 for Windows 32bit installer](https://www.python.org/ftp/python/2.7.15/python-2.7.15.msi).
+Alternatively, you can set it up manually:
+- Download and install [Python 2.7 for Windows 64bit installer](https://www.python.org/ftp/python/2.7.15/python-2.7.15.amd64.msi) or [Python 2.7 for Windows 32bit installer](https://www.python.org/ftp/python/2.7.15/python-2.7.15.msi)
+- Use Pip to install all necessary libraries
 
 ### Linux
 
 Use the package manager to install Python 2.7 and Paramiko for Python. On Debian you can install both via apt-get:
 
 ```
-apt-get install python2.7 python-paramiko
+apt-get install python2.7 python-paramiko python-requests
 ```
 
 Alternatively, you can install Python and Pip via apt-get and then Paramiko via Pip, however this might need some
@@ -73,7 +64,7 @@ Use [Homebrew](https://brew.sh/) to install Python and Pip. Then use Pip to inst
 
 ```
 brew install python
-pip install paramiko
+pip install paramiko requests
 ```
 
 
