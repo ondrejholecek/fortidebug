@@ -82,6 +82,14 @@ class SSHCommands:
 		self.channel.send("diagnose debug console retry-log-msg enable\n")
 		self.read_until_prompt()
 
+		# reset debugging and enable debug outputs
+		self.channel.send("diagnose debug reset\n")
+		self.read_until_prompt()
+		self.channel.send("diagnose debug duration 0\n")
+		self.read_until_prompt()
+		self.channel.send("diagnose debug enable\n")
+		self.read_until_prompt()
+
 	def basics(self):
 		tmp = self.basic_exec("get system status")
 
