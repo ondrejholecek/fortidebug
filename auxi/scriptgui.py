@@ -7,6 +7,7 @@ import os
 import re
 import xml.etree.ElementTree
 import requests
+import time
 
 class ScriptFile:
 	def __init__(self, url):
@@ -41,12 +42,19 @@ class ScriptFile:
 				self.message   = "Unable to parse script file (2)"
 				return
 		else:
-			try:
-				r = requests.get(self.url)
-			except Exception, e:
-				self.status_ok = False
-				self.message   = "Unable to download script file (%s)" % (str(e),)
-				return
+			errcount = 0
+			while True:
+				try:
+					r = requests.get(self.url)
+				except Exception, e:
+					errcount += 1
+					if errcount >= 3:
+						self.status_ok = False
+						self.message   = "Unable to download script file (%s)" % (str(e),)
+						return
+					time.sleep(1)
+				else:
+					break
 
 			if r.status_code != 200: 
 				self.status_ok = False
@@ -114,7 +122,7 @@ class App(tk.Frame):
 		elif islist:
 			f = tk.Frame(parent)
 			scrollbar = tk.Scrollbar(f, orient=tk.VERTICAL)
-			self.inputs[name]['input'] = tk.Listbox(f, selectmode=tk.MULTIPLE, exportselection=0, height=10, yscrollcommand=scrollbar.set, width=39)
+			self.inputs[name]['input'] = tk.Listbox(f, selectmode=tk.MULTIPLE, exportselection=0, height=10, yscrollcommand=scrollbar.set, width=49)
 			self.inputs[name]['input'].grid(row=0, column=0, sticky="WE")
 			scrollbar.config(command=self.inputs[name]['input'].yview)
 			scrollbar.grid(row=0, column=1, sticky="NS")
@@ -128,15 +136,15 @@ class App(tk.Frame):
 
 		# Widget group - FortiGate connection settings
 		group_fgt = tk.LabelFrame(self, text="FortiGate", padx=5, pady=5)
-		self.create_input(group_fgt, 0, "Host:", "host", 40)
-		self.create_input(group_fgt, 1, "Port:", "port", 40, default="22")
+		self.create_input(group_fgt, 0, "Host:", "host", 50)
+		self.create_input(group_fgt, 1, "Port:", "port", 50, default="22")
 		self.create_input(group_fgt, 2, "Usernane:", "username")
 		self.create_input(group_fgt, 3, "Password:", "password", show="*")
 		group_fgt.grid(row=0, column=0, padx=10, pady=10, sticky="WE")
 
 		# Widget group - Script parameters
 		group_script = tk.LabelFrame(self, text="Script options", padx=5, pady=5)
-		self.create_input(group_script, 0, "Script URL:", "url", 40, default="https://scripts.fortimonitor.com/global/latest.xml")
+		self.create_input(group_script, 0, "Script URL:", "url", 50, default="https://scripts.fortimonitor.com/global/latest.xml")
 
 		self.btn_load = tk.Button(group_script, text="Load", command=self.script_entered)
 		self.btn_load.grid(row=1, column=1, sticky="we")
@@ -150,7 +158,7 @@ class App(tk.Frame):
 		self.inputs['profile']['input'].config(state="disabled")
 
 		group_output = tk.LabelFrame(self, text="Save output", padx=5, pady=5)
-		self.create_input(group_output, 3, "Filename:", "output", default="<click to select>", width=40)
+		self.create_input(group_output, 3, "Filename:", "output", default="<click to select>", width=50)
 		group_output.grid(row=2, column=0, padx=10, pady=10, sticky="WE")
 
 		self.inputs['output']['input'].config(state="disabled")
@@ -175,13 +183,6 @@ class App(tk.Frame):
 		self.inputs['cycle']['input'].config(state="normal")
 		for choice in sf.cycles:
 			self.inputs['cycle']['input'].insert(tk.END, choice)
-		self.inputs['cycle']['input'].insert(tk.END, "test1")
-		self.inputs['cycle']['input'].insert(tk.END, "test2")
-		self.inputs['cycle']['input'].insert(tk.END, "test3")
-		self.inputs['cycle']['input'].insert(tk.END, "test4")
-		self.inputs['cycle']['input'].insert(tk.END, "test5")
-		self.inputs['cycle']['input'].insert(tk.END, "test6")
-		self.inputs['cycle']['input'].insert(tk.END, "test7")
 
 		self.inputs['profile']['value'].set('<default>')
 		for choice in sf.profiles:
