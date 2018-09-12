@@ -118,6 +118,8 @@
 				  - ""      : any
 				  - "-"     : any
 
+				  The recognized attributes are 'major', 'minor', 'patch', 'build'.
+
 				  Else is run only if none of the <if>s matched.
 			-->
 			<version>
