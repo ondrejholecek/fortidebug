@@ -12,8 +12,9 @@ class ParserDiagSysTop(EasyParser):
 	def prepare(self):
 		self.re_top = re.compile("^\s*(\S+)\s+(\d+)\s+(\S)\s+(?:([<>])\s+)?([\d.]+)\s+([\d.]+)", re.M)
 
-	def get(self, interval, filterx, filter_type):
+	def get(self, interval, filter_type="all", filter_params=None):
 		# get parsed output with all processes
+		# we need to ignore the first cycle, because the values there might not be correct
 		self.cycles_left = 2
 		self.results     = []
 		self.sshc.continuous_exec("diagnose sys top %i 99" % (interval,), self.divide, self.result, self.exit, {'cache':{}})
@@ -23,22 +24,18 @@ class ParserDiagSysTop(EasyParser):
 		if filter_type == "all":
 			return results
 
-		elif filter_type == "pid":
+		elif filter_type in ("pid", "name"):
 			ret = []
 			for r in results:
-				if r['pid'] in filterx:
+				if r[filter_type] in filter_params:
 					ret.append(r)
 			return ret
 
-		elif filter_type == "name":
-			ret = []
-			for r in results:
-				if r['name'] in filterx:
-					ret.append(r)
-			return ret
+		else:
+			return None
 
-		return None
-
+	# function for continuous_exec
+	# - divides the flowing output into sections
 	def divide(self, data, cache):
 		data = data.replace("\x1b[H\x1b[J", '')
 		sep  = "Run Time:"
@@ -59,6 +56,8 @@ class ParserDiagSysTop(EasyParser):
 			rest = sep+s[-1]
 			return (result, rest)
 
+	# function for continuous_exec
+	# - saves the parsed result for each section
 	def result(self, data, cache):
 		parts = self.re_top.findall(data)
 		if len(parts) == 0:
@@ -78,6 +77,8 @@ class ParserDiagSysTop(EasyParser):
 		self.results.append(out)
 		self.cycles_left -= 1
 
+	# function for continuous_exec
+	# - finishes after specified number of iterations
 	def exit(self, cache):
 		if self.cycles_left == 0: return "q"
 		else: return None

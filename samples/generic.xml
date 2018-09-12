@@ -45,8 +45,8 @@
 			<parser name="DiagSysTop">
 				<input>
 					<static value="1" type="int"/>               <!-- collect interval -->
-					<parameter name="wad_pids_all" type="int"/>  <!-- send wad pids    -->
 					<static value="pid"/>                        <!-- filter by PID    -->
+					<parameter name="wad_pids_all" type="int"/>  <!-- send wad pids    -->
 				</input>
 			</parser>
 
