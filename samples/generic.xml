@@ -24,7 +24,6 @@
 			<simple context="mgmt_vdom"    >diag vpn ike status summary   </simple>
 			<simple context="mgmt_vdom"    >diag vpn ike errors           </simple>
 		</cycle>
-
 		<cycle name="cp" desc="CP related outputs." profile="main" parameters="main">
 			<echo>CP related outputs.</echo>
 
@@ -129,6 +128,34 @@
 				<unset name=">wad:process"/>
 			</foreach>
 		</cycle>
+
+		<cycle name="ips" desc="IPS related outputs." profile="main" parameters="main">
+			<echo>IPS related outputs.</echo>
+
+			<parser name="IPSSummary">
+				<store>
+					<param type="ipse_pids_all" name="ipse_pids_all" />
+				</store>
+			</parser>
+
+			<parser name="DiagSysTop">
+				<input>
+					<static value="1" type="int"/>               <!-- collect interval -->
+					<static value="pid"/>                        <!-- filter by PID    -->
+					<parameter name="ipse_pids_all" type="int"/> <!-- send IPSE pids   -->
+				</input>
+			</parser>
+
+			<simple context="global" >diag ips session stat            </simple>
+			<simple context="global" >diag ips session content         </simple>
+			<simple context="global" >diag ips dissector status        </simple>
+			<simple context="global" >diag ips memory pool             </simple>
+			<simple context="global" >diag ips memory status           </simple>
+			<simple context="global" >diag ips session performance     </simple>
+			<simple context="global" >diag ips signature hit           </simple>
+			<simple context="global" >diag test app ipsmonitor 14      </simple>
+		</cycle>
+
 
 	</cycles>
 </fortimonitor_scriptfile>
