@@ -223,7 +223,7 @@ class App(tk.Frame):
 
 
 	def save_dialog(self, event):
-		tmp = tkFileDialog.asksaveasfilename(title="Save outputs", filetypes = (("JSONline compressed","*.jsonl.bz2"),("All files","*.*")), defaultextension=".jsonl.bz2")
+		tmp = tkFileDialog.asksaveasfilename(title="Save outputs", filetypes = (("JSON Lines compressed","*.jsonl.bz2"),("All files","*.*")), defaultextension=".jsonl.bz2")
 		if len(tmp) > 0:
 			self.inputs['output']['value'].set(tmp)
 
