@@ -43,7 +43,7 @@
 		<cycle name="npu" desc="NPU related outputs." profile="main" parameters="main">
 			<echo>NP6 related outputs.</echo>
 
-			<parser name="NP6IfaceMapping">
+			<parser name="NP6IfaceMapping" silent="true">
 				<store>
 					<param type="np6_ids"  name="np6_ids"/>
 				</store>
