@@ -673,6 +673,7 @@ class Script:
 			self.output.flush()
 
 		if not self.quiet:
+			print prepend_timestamp("<<< %s" % (command,), etime, 'script')
 			print prepend_timestamp(str(output), etime, 'script')
 			
 	
