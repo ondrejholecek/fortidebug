@@ -149,11 +149,15 @@
 			<simple context="global" >diag ips session stat            </simple>
 			<simple context="global" >diag ips session content         </simple>
 			<simple context="global" >diag ips dissector status        </simple>
-			<simple context="global" >diag ips memory pool             </simple>
 			<simple context="global" >diag ips memory status           </simple>
 			<simple context="global" >diag ips session performance     </simple>
 			<simple context="global" >diag ips signature hit           </simple>
+			<simple context="global" >diag test app ipsmonitor 3       </simple>
+			<simple context="global" >diag test app ipsmonitor 10      </simple>
+			<simple context="global" >diag test app ipsmonitor 12      </simple>
 			<simple context="global" >diag test app ipsmonitor 14      </simple>
+			<simple context="global" >diag test app ipsmonitor 15      </simple>
+			<simple context="global" >diag test app ipsmonitor 16      </simple>
 		</cycle>
 
 
