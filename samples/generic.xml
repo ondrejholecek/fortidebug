@@ -25,6 +25,21 @@
 			<simple context="mgmt_vdom"    >diag vpn ike errors           </simple>
 		</cycle>
 
+		<cycle name="cp" desc="CP related outputs." profile="main" parameters="main">
+			<echo>CP related outputs.</echo>
+
+			<parser name="PCI">
+				<store>
+					<param type="cp8_ids"   name="cp8_ids"/>
+				</store>
+			</parser>
+
+			<foreach list="cp8_ids" name="cp_id">
+				<simple context="global"    >diagnose cp cp8 register ${cp_id}  </simple>
+				<simple context="global"    >diagnose cp cp8 stats ${cp_id}     </simple>
+			</foreach>
+		</cycle>
+
 		<cycle name="npu" desc="NPU related outputs." profile="main" parameters="main">
 			<echo>NP6 related outputs.</echo>
 
