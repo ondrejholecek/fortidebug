@@ -17,6 +17,7 @@ import time
 import json
 import requests
 import datetime
+import bz2
 
 sshc, args = ssh([
 	{ 'name':'--cycle-time',   'type':int, 'default':30,  'help':'How long should each cycle take' },
@@ -26,6 +27,7 @@ sshc, args = ssh([
 	{ 'name':'--profile',      'default':None, 'help':'Override the default profile name for the cycle' },
 	{ 'name':'--param',        'default':[], 'action':'append', 'help':'Override some parameters' },
 	{ 'name':'--output',       'default':None, 'help':'Name of the output file (.jsonl format)' },
+	{ 'name':'--compress',     'type':int, 'default':10,  'help':'How many outputs to compress at once, 0 disables compression' },
 	{ 'name':'--quiet',        'default':False, 'action':'store_true',  'help':'Do not show commands on stdout' },
 ], """
 This utility allows you to write and run custom commands and/or standard parsers on the remote FortiGate. 
@@ -40,6 +42,8 @@ Format of the XML file and all its options is described in the sample XML file (
 
 By default only the human readable output of the commands is print on standard output and this can be 
 disabled with "--quiet" option. To write a computer-frieldy .jsonl output to a file, use "--output" option.
+If "--compress" option is not used, there are 10 outputs buffered before they are compressed and written
+to the output file. This cna be changed and 0 means to disable compression completely.
 
 Each cycle has pre-assigned profile that controls its behavior. At this moment, only the "interscript sleep"
 control is implemented. The default profile can be overriden with "--profile" command.
@@ -68,7 +72,9 @@ class Script:
 		if args.output == None:
 			self.output   = None
 		else:
-			self.output   = open(args.output, "ab")
+			self.output        = open(args.output, "ab")
+			self.output_buffer        = []
+			self.output_buffer_length = args.compress
 
 		self.real_filename = None
 
@@ -78,6 +84,9 @@ class Script:
 		self.root     = None
 
 		self.load()
+
+	def destroy(self):
+		self.save_result_compress()
 
 	def load(self):
 		# is it a local file (no prefix or "file://") or remote file (*://)?
@@ -679,14 +688,27 @@ class Script:
 					'real_filename' : self.real_filename,
 				},
 			}
-			self.output.write(json.dumps(tmp) + "\n")
-			self.output.flush()
+
+			if self.output_buffer_length == 0:
+				self.output.write(json.dumps(tmp) + "\n")
+				self.output.flush()
+
+			else:
+				self.output_buffer.append( json.dumps(tmp) )
+				if len(self.output_buffer) >= self.output_buffer_length:
+					self.save_result_compress()
 
 		if not self.quiet:
 			print prepend_timestamp("<<< %s" % (command,), etime, 'script')
 			print prepend_timestamp(str(output), etime, 'script')
 			
-	
+	# separate function to be able to call it also when the program is terminating
+	def save_result_compress(self):	
+		if self.output_buffer_length > 0 and len(self.output_buffer) > 0:
+			o = bz2.compress("\n".join(self.output_buffer) + "\n")
+			self.output.write(o)
+			self.output.flush()
+			self.output_buffer = []
 
 if __name__ == '__main__':
 	script = Script(sshc, args)
@@ -695,3 +717,4 @@ if __name__ == '__main__':
 	except KeyboardInterrupt:
 		sshc.destroy()
 
+	script.destroy()
