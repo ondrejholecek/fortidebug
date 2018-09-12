@@ -152,6 +152,7 @@
 			<simple context="global" >diag ips memory status           </simple>
 			<simple context="global" >diag ips session performance     </simple>
 			<simple context="global" >diag ips signature hit           </simple>
+			<simple context="global" >diag ips av stats show           </simple>
 			<simple context="global" >diag test app ipsmonitor 3       </simple>
 			<simple context="global" >diag test app ipsmonitor 10      </simple>
 			<simple context="global" >diag test app ipsmonitor 12      </simple>
