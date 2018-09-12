@@ -668,6 +668,10 @@ class Script:
 				'output' : output,
 				'time': str(etime),
 				'parameters' : rp,
+				'flags': {
+					'time_format': etime.time_format,
+					'time_source': etime.time_source,
+				},
 			}
 			self.output.write(json.dumps(tmp) + "\n")
 			self.output.flush()

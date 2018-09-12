@@ -27,21 +27,22 @@ class TZoffset(datetime.tzinfo):
 		return self.name
 
 class OurDatetime():
-	def __init__(self, dt, preferred_format):
+	def __init__(self, dt, time_format, time_source):
 		self.dt               = dt
-		self.preferred_format = preferred_format
+		self.time_format = time_format
+		self.time_source      = time_source
 
 	def __str__(self):
-		if self.preferred_format == 'human-with-offset':
+		if self.time_format == 'human-with-offset':
 			return str(self.dt)
 
-		elif self.preferred_format == 'human':
+		elif self.time_format == 'human':
 			return str(self.dt.replace(tzinfo=None))
 
-		elif self.preferred_format == 'timestamp':
+		elif self.time_format == 'timestamp':
 			return str( int((self.dt - datetime.datetime(1970, 1, 1, 0, 0, 0, 0, TZoffset(0, "utc"))).total_seconds()) )
 
-		elif self.preferred_format == 'iso':
+		elif self.time_format == 'iso':
 			return self.dt.isoformat()
 
 		else:
@@ -65,10 +66,10 @@ class OurDatetime():
 		if tzinfo == None: n_tzinfo = self.dt.tzinfo
 		else: n_tzinfo = tzinfo
 
-		return OurDatetime(datetime.datetime(n_year, n_month, n_day, n_hour, n_minute, n_second, n_microsecond, n_tzinfo), self.preferred_format)
+		return OurDatetime(datetime.datetime(n_year, n_month, n_day, n_hour, n_minute, n_second, n_microsecond, n_tzinfo), self.time_format, self.time_source)
 	
 	def __add__(self, delta):
-		return OurDatetime(self.dt + delta, self.preferred_format)
+		return OurDatetime(self.dt + delta, self.time_format, self.time_source)
 
 	def __sub__(self, other):
 		return self.math(other, '-')
@@ -123,9 +124,9 @@ class ParserCurrentTime(EasyParser):
 		time_source = self.get_local_param('args').time_source
 
 		if time_source == 'device':
-			dt_with_offset = OurDatetime(self.get_from_device(), time_format)
+			dt_with_offset = OurDatetime(self.get_from_device(), time_format, time_source)
 		elif time_source == 'local':
-			dt_with_offset = OurDatetime(self.get_from_local(), time_format)
+			dt_with_offset = OurDatetime(self.get_from_local(), time_format, time_source)
 
 		return dt_with_offset
 
