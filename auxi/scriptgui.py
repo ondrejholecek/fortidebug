@@ -205,7 +205,6 @@ class App(tk.Frame):
 			tkMessageBox.showerror("Error", sf.message)
 			return
 
-		self.inputs['url']['value'].set(sf.real_url)
 		self.inputs['url']['input'].config(state="disabled")
 		self.btn_load.config(state="disabled")
 
