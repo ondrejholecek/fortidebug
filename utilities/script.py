@@ -447,6 +447,10 @@ class Script:
 
 		pname = cmd.attrib['name']
 
+		silent = False
+		if 'silent' in cmd.attrib and cmd.attrib['silent'].lower() in ('yes', 'true', '1'):
+			silent = True
+
 		# load parser
 		try:
 			parserclass = getattr(__import__('parsers.' + pname, fromlist=['Parser'+pname]), 'Parser'+pname)
@@ -502,7 +506,8 @@ class Script:
 		except Exception, e:
 			raise MyException("Parser: unable to call parser '%s': '%s'" % (pname, str(e),))
 
-		self.save_result("Parser:%s:%s" % (pname, iparams,), None, result, self.last_command_time, params)
+		if not silent:
+			self.save_result("Parser:%s:%s" % (pname, iparams,), None, result, self.last_command_time, params)
 
 		# if we want to store some parameters, do it
 		store = cmd.find('store')

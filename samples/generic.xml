@@ -28,7 +28,7 @@
 		<cycle name="cp" desc="CP related outputs." profile="main" parameters="main">
 			<echo>CP related outputs.</echo>
 
-			<parser name="PCI">
+			<parser name="PCI" silent="true">
 				<store>
 					<param type="cp8_ids"   name="cp8_ids"/>
 				</store>

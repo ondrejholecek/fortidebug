@@ -98,8 +98,12 @@
 				  or <parameter> which can be seen futher, which uses one of the global parameters.
 				  Both of them contain attribute "type" which can be either "int" or "str", and it
 				  will be converted correctly (including lists) before the parsers is called.
+
+				  Parser can optionaly have "silent" attribute, if it is "true", "yes" or "1",
+				  the plain (programming) output of the parser will not be saved or shown on the
+				  screen. By default it is shown and saved.
 			-->
-			<parser name="ProcessStat">
+			<parser name="ProcessStat" silent="true">
 				<input>
 					<static value="1" type='int'/> 
 				</input>
