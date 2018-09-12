@@ -393,7 +393,9 @@ class Script:
 
 		if cmd.attrib['list'] not in params:
 			raise MyException("Foreach: list '%s' does not exist in params")
-		if type(params[cmd.attrib['list']]) != type([]):
+		elif params[cmd.attrib['list']] == None:
+			return
+		elif type(params[cmd.attrib['list']]) != type([]):
 			raise MyException("Foreach: parameter '%s' is not a list")
 
 		# save original value
@@ -421,7 +423,7 @@ class Script:
 
 		# restore original
 		for use in uses:
-			if originals[use] == None:
+			if originals[use] == None and use in params:
 				del params[use]
 		else:
 			params[use] = originals[use]
