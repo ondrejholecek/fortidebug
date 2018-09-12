@@ -69,12 +69,13 @@ class Script:
 		self.params   = args.param
 		self.quiet    = args.quiet
 
+		self.output_buffer_length = args.compress
+		self.output_buffer        = []
+
 		if args.output == None:
 			self.output   = None
 		else:
-			self.output        = open(args.output, "ab")
-			self.output_buffer        = []
-			self.output_buffer_length = args.compress
+			self.output   = open(args.output, "ab")
 
 		self.real_filename = None
 
