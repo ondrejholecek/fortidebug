@@ -54,6 +54,10 @@
 			  command line. But the parameters themself can be added or overwrite by -param command.
 		-->
 		<cycle name="generic" desc="Collects generic health outputs for the device." profile="main" parameters="main">
+			<!-- Echo just prints something on standard output (not to outfile).
+			-->
+			<echo>Generic health statistics collector</echo>
+
 			<!-- Simple element is just a simple command execution. The text of this element contains 
 			     the command to be executed. 
 
@@ -100,6 +104,35 @@
 					<static value="1" type='int'/> 
 				</input>
 			</parser>
+
+			<!-- Element "version" allows to conditionally run parts of the code based on 
+			     FortiOS version running on the device.
+
+				  There can be many <if> and <else> sub-elements. The <if> has all attributes
+				  optional and if the attribute is missing, it means "any". If the attribute
+				  is present it should be in one of following forms:
+				  - "10"    : exact version (10 in this example), no less, no more
+				  - "-10"   : ten or less
+				  - "10-"   : ten or more
+				  - "2-10"  : from two to ten, edges included
+				  - ""      : any
+				  - "-"     : any
+
+				  Else is run only if none of the <if>s matched.
+			-->
+			<version>
+				<if major="5" minor="4-" patch="22">
+					<echo>matching</echo>
+				</if>
+	
+				<if major="5" minor="4-" patch="12">
+					<echo>matching 2</echo>
+				</if>
+	
+				<else>
+					<echo>not-maching</echo>
+				</else>
+			</version>
 
 			<!-- Element "subcycle" allows to call another cycle. Be aware that the sub-cycle inherits
 			     the profile and parameter list of the main cycle (even if it has its own definition).

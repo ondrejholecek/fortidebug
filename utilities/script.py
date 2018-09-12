@@ -262,6 +262,9 @@ class Script:
 			elif child.tag == 'parser':
 				self.do_parser(child, profile, params)
 	
+			elif child.tag == 'version':
+				self.do_version(child, profile, params)
+	
 			elif child.tag == 'set':
 				self.do_set(child, profile, params)
 	
@@ -273,6 +276,9 @@ class Script:
 	
 			elif child.tag == 'dump_params':
 				self.do_dump_params(child, profile, params)
+	
+			elif child.tag == 'echo':
+				self.do_echo(child, profile, params)
 	
 			else:
 				print >>sys.stderr, "Warning: unknown cycle command '%s', ignoring" % (child.tag,)
@@ -507,6 +513,59 @@ class Script:
 				simple = parser.simple_value(result, sparam.attrib['type'])
 				params[sparam.attrib['name']] = simple
 
+	def do_version(self, cmd, profile, params):
+		for el in cmd:
+			# <if> 
+			if el.tag == 'if':
+				# convert attributes into ranges <start, end> where None means infinite
+				ranges = {}
+				for x in ('major', 'minor', 'patch', 'build'):
+					ranges[x] = (None, None) 
+					
+					try:
+						if x in el.attrib:
+							xv = el.attrib[x].split('-')
+							if len(xv) == 1:
+								if len(xv[0]) == 0: ranges[x] = (None, None)
+								else: ranges[x] = (int(xv[0]), int(xv[0]))
+	
+							elif len(xv) == 2:
+								if len(xv[0]) == 0: xfrom = None
+								else: xfrom = int(xv[0])
+	
+								if len(xv[1]) == 0: xto = None
+								else: xto = int(xv[1])
+	
+								ranges[x] = (xfrom, xto)
+	
+							else:
+								raise MyException("Version: invalid range for '%s'" % (x,))
+
+					except ValueError:
+						raise MyException("Version: cannot process '%s'" % (x,))
+
+				# check if it matches the running version
+				running  = sshc.get_info()['version']
+				matching = True
+
+				for x in ('major', 'minor', 'patch', 'build'):
+					start = ranges[x][0]
+					end   = ranges[x][1]
+
+					if (start != None) and (running[x] < start): matching = False
+					if (end   != None) and (running[x] > end)  : matching = False
+
+				# if matching, run the command and return
+				if matching:
+					self.do_commands(el, profile, params)
+					return
+
+			# <else> 
+			# if we got here, we just run whatever is inside and return
+			if el.tag == 'else':
+				self.do_commands(el, profile, params)
+				return
+
 	def do_set(self, cmd, profile, params):
 		for tmp in ('name',):
 			if tmp not in cmd.attrib:
@@ -584,6 +643,10 @@ class Script:
 
 	def do_dump_params(self, cmd, profile, params):
 		self.save_result("internal:dump_params", None, params, self.last_command_time, params)
+
+	def do_echo(self, cmd, profile, params):
+		v = ">>> %s" % (self.element_get_command(cmd, profile, params),)
+		print prepend_timestamp(v, self.last_command_time, 'script')
 
 	def save_result(self, command, vdom, output, etime, params):
 		rp = {}

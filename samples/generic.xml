@@ -26,6 +26,8 @@
 		</cycle>
 
 		<cycle name="wad" desc="Explicit proxy related output." profile="main" parameters="main">
+			<echo>Running WAD troubleshooting cycle</echo>
+
 			<parser name="WADSummary">
 				<store> 
 					<param type="wad_contexts_managers"    name="wad_contexts_managers"/> 
