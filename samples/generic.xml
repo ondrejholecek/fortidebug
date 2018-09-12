@@ -18,12 +18,53 @@
 	</plists>
 
 	<cycles>
-		<cycle name="ipsec" desc="IPSec VPN related outputs." profile="main" parameters="main">
-			<simple context="mgmt_vdom"    >get vpn ipsec stats crypto    </simple>
-			<simple context="mgmt_vdom"    >diag vpn ike counts           </simple>
-			<simple context="mgmt_vdom"    >diag vpn ike status summary   </simple>
-			<simple context="mgmt_vdom"    >diag vpn ike errors           </simple>
+		<cycle name="performance" desc="Generic FortiOS performance output." profile="main" parameters="main">
+			<echo>FortiOS performance related outputs.</echo>
+
+			<simple context="global"    >get system performance status           </simple>
+			<simple context="global"    >diagnose sys session full-stat          </simple>
+			<simple context="global"    >diagnose sys session6 full-stat         </simple>
+			<simple context="global"    >diagnose hardware sysinfo memory        </simple>
+			<simple context="global"    >diagnose hardware sysinfo slab          </simple>
+			<simple context="global"    >diagnose hardware sysinfo interrupts    </simple>
+			<simple context="global"    >diagnose debug rating                   </simple>
+			<simple context="global"    >fnsysctl cat /proc/net/snmp             </simple>
+			<simple context="global"    >fnsysctl cat /proc/stat                 </simple>
+
+			<simple context="mgmt_vdom" >diagnose firewall packet distribution   </simple>
+			<simple context="mgmt_vdom" >diagnose snmp ip frags                  </simple>
+			<simple context="mgmt_vdom" >diagnose netlink interface list         </simple>
+			<simple context="mgmt_vdom" >diagnose netlink device list            </simple>
+
+			<simple context="mgmt_vdom" >diagnose firewall vip virtual-server real-server list        </simple>
+			<simple context="mgmt_vdom" >diagnose firewall vip virtual-server stats                   </simple>
+			<simple context="mgmt_vdom" >diagnose firewall vip virtual-server stats operational list  </simple>
+
+			<continuous separator="   CPU [" timeout="30" ignore="\x1b[H\x1b[J" quit="q">
+				diag sys top-summary "-i 5 -s mem"
+			</continuous>
+			<continuous separator="Run Time:" timeout="30" ignore="\x1b[H\x1b[J" quit="q">
+				diag sys top 5 30
+			</continuous>
 		</cycle>
+
+		<cycle name="ipsec" desc="IPSec VPN related outputs." profile="main" parameters="main">
+			<echo>IPSec related outputs.</echo>
+			<simple context="mgmt_vdom"    >get vpn ipsec stats crypto        </simple>
+			<simple context="mgmt_vdom"    >diagnose vpn ike counts           </simple>
+			<simple context="mgmt_vdom"    >diagnose vpn ike status summary   </simple>
+			<simple context="mgmt_vdom"    >diagnose vpn ike errors           </simple>
+			<simple context="mgmt_vdom"    >diagnose vpn ike gateway list     </simple>
+			<simple context="mgmt_vdom"    >diagnose vpn tunnel list          </simple>
+		</cycle>
+
+		<cycle name="sensors" desc="Hardware sensors related output." profile="main" parameters="main">
+			<echo>Hardware sensors related outputs.</echo>
+
+			<simple context="global"    >execute sensor list                 </simple>
+			<simple context="global"    >execute sensor detail               </simple>
+		</cycle>
+
 		<cycle name="cp" desc="CP related outputs." profile="main" parameters="main">
 			<echo>CP related outputs.</echo>
 
@@ -49,16 +90,17 @@
 			</parser>
 
 			<foreach list="np6_ids" name="npu_id">
-				<simple context="global"    >diag npu np6 dce ${npu_id}                      </simple>
-				<simple context="global"    >diag npu np6 sse-stats ${npu_id}                </simple>
-				<simple context="global"    >diag npu np6 anomaly-drop ${npu_id}             </simple>
-				<simple context="global"    >diag npu np6 hrx-drop ${npu_id}                 </simple>
-				<simple context="global"    >diag npu np6 session-stats ${npu_id}            </simple>
-				<simple context="global"    >diag npu np6 pdq ${npu_id}                      </simple>
-				<simple context="global"    >diag npu np6 ipsec-stats                        </simple>
-				<simple context="global"    >diag npu np6 synproxy-stats                     </simple>
-				<simple context="global"    >fnsysctl cat /proc/net/np6_${npu_id}/gige-stats </simple>
-				<simple context="global"    >diag npu np6 xgmac-stats ${npu_id}              </simple>
+				<simple context="global"    >diagnose npu np6 dce ${npu_id}                      </simple>
+				<simple context="global"    >diagnose npu np6 sse-stats ${npu_id}                </simple>
+				<simple context="global"    >diagnose npu np6 anomaly-drop ${npu_id}             </simple>
+				<simple context="global"    >diagnose npu np6 hrx-drop ${npu_id}                 </simple>
+				<simple context="global"    >diagnose npu np6 session-stats ${npu_id}            </simple>
+				<simple context="global"    >diagnose npu np6 pdq ${npu_id}                      </simple>
+				<simple context="global"    >diagnose npu np6 ipsec-stats                        </simple>
+				<simple context="global"    >diagnose npu np6 synproxy-stats                     </simple>
+				<simple context="global"    >fnsysctl cat /proc/net/np6_${npu_id}/gige-stats     </simple>
+				<simple context="global"    >diagnose npu np6 xgmac-stats ${npu_id}              </simple>
+				<simple context="global"    >fnsysctl cat /proc/nturbo/${npu_id}/drv             </simple>
 			</foreach>
 		</cycle>
 
@@ -89,42 +131,42 @@
 
 			<foreach list="wad_contexts_managers" name="ctx pid">
 				<set name=">wad:process">manager:${pid}:${ctx}</set>
-				<simple context="global"       >diag test app wad ${ctx}         </simple>
-				<simple context="global"       >diag test app wad 1              </simple>
-				<simple context="global"       >diag test app wad 2              </simple>
-				<simple context="global"       >diag test app wad 3              </simple>
-				<simple context="global"       >diag test app wad 4              </simple>
-				<simple context="global"       >diag test app wad 803            </simple>
+				<simple context="global"       >diagnose test app wad ${ctx}         </simple>
+				<simple context="global"       >diagnose test app wad 1              </simple>
+				<simple context="global"       >diagnose test app wad 2              </simple>
+				<simple context="global"       >diagnose test app wad 3              </simple>
+				<simple context="global"       >diagnose test app wad 4              </simple>
+				<simple context="global"       >diagnose test app wad 803            </simple>
 				<unset name=">wad:process"/>
 			</foreach>
 
 			<foreach list="wad_contexts_dispatchers" name="ctx pid">
 				<set name=">wad:process">dispatcher:${pid}:${ctx}</set>
-				<simple context="global"       >diag test app wad ${ctx}         </simple>
-				<simple context="global"       >diag test app wad 10             </simple>
-				<simple context="global"       >diag test app wad 11             </simple>
-				<simple context="global"       >diag test app wad 12             </simple>
+				<simple context="global"       >diagnose test app wad ${ctx}         </simple>
+				<simple context="global"       >diagnose test app wad 10             </simple>
+				<simple context="global"       >diagnose test app wad 11             </simple>
+				<simple context="global"       >diagnose test app wad 12             </simple>
 				<unset name=">wad:process"/>
 			</foreach>
 
 			<foreach list="wad_contexts_workers" name="ctx pid">
 				<set name=">wad:process">worker:${pid}:${ctx}</set>
-				<simple context="global"       >diag test app wad ${ctx}         </simple>
-				<simple context="global"       >diag test app wad 13             </simple>
-				<simple context="global"       >diag test app wad 22             </simple>
-				<simple context="global"       >diag test app wad 23             </simple>
-				<simple context="global"       >diag test app wad 25             </simple>
-				<simple context="global"       >diag test app wad 110            </simple>
+				<simple context="global"       >diagnose test app wad ${ctx}         </simple>
+				<simple context="global"       >diagnose test app wad 13             </simple>
+				<simple context="global"       >diagnose test app wad 22             </simple>
+				<simple context="global"       >diagnose test app wad 23             </simple>
+				<simple context="global"       >diagnose test app wad 25             </simple>
+				<simple context="global"       >diagnose test app wad 110            </simple>
 				<unset name=">wad:process"/>
 			</foreach>
 
 			<foreach list="wad_contexts_informers" name="ctx pid">
 				<set name=">wad:process">informer:${pid}:${ctx}</set>
-				<simple context="global"       >diag test app wad ${ctx}         </simple>
-				<simple context="global"       >diag test app wad 110            </simple>
-				<simple context="global"       >diag test app wad 112            </simple>
-				<simple context="global"       >diag test app wad 113            </simple>
-				<simple context="global"       >diag test app wad 114            </simple>
+				<simple context="global"       >diagnose test app wad ${ctx}         </simple>
+				<simple context="global"       >diagnose test app wad 110            </simple>
+				<simple context="global"       >diagnose test app wad 112            </simple>
+				<simple context="global"       >diagnose test app wad 113            </simple>
+				<simple context="global"       >diagnose test app wad 114            </simple>
 				<unset name=">wad:process"/>
 			</foreach>
 		</cycle>
@@ -146,19 +188,19 @@
 				</input>
 			</parser>
 
-			<simple context="global" >diag ips session stat            </simple>
-			<simple context="global" >diag ips session content         </simple>
-			<simple context="global" >diag ips dissector status        </simple>
-			<simple context="global" >diag ips memory status           </simple>
-			<simple context="global" >diag ips session performance     </simple>
-			<simple context="global" >diag ips signature hit           </simple>
-			<simple context="global" >diag ips av stats show           </simple>
-			<simple context="global" >diag test app ipsmonitor 3       </simple>
-			<simple context="global" >diag test app ipsmonitor 10      </simple>
-			<simple context="global" >diag test app ipsmonitor 12      </simple>
-			<simple context="global" >diag test app ipsmonitor 14      </simple>
-			<simple context="global" >diag test app ipsmonitor 15      </simple>
-			<simple context="global" >diag test app ipsmonitor 16      </simple>
+			<simple context="global" >diagnose ips session stat            </simple>
+			<simple context="global" >diagnose ips session content         </simple>
+			<simple context="global" >diagnose ips dissector status        </simple>
+			<simple context="global" >diagnose ips memory status           </simple>
+			<simple context="global" >diagnose ips session performance     </simple>
+			<simple context="global" >diagnose ips signature hit           </simple>
+			<simple context="global" >diagnose ips av stats show           </simple>
+			<simple context="global" >diagnose test app ipsmonitor 3       </simple>
+			<simple context="global" >diagnose test app ipsmonitor 10      </simple>
+			<simple context="global" >diagnose test app ipsmonitor 12      </simple>
+			<simple context="global" >diagnose test app ipsmonitor 14      </simple>
+			<simple context="global" >diagnose test app ipsmonitor 15      </simple>
+			<simple context="global" >diagnose test app ipsmonitor 16      </simple>
 		</cycle>
 
 
