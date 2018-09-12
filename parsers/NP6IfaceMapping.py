@@ -35,3 +35,7 @@ class ParserNP6IfaceMapping(EasyParser):
 			})
 
 		return links
+
+	def simple_value(self, result, name):
+		if name == "np6_ids":
+			return result.keys()

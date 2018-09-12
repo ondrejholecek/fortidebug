@@ -18,16 +18,37 @@
 	</plists>
 
 	<cycles>
-		<cycle name="ipsec" desc="IPSec VPN related output." profile="main" parameters="main">
+		<cycle name="ipsec" desc="IPSec VPN related outputs." profile="main" parameters="main">
 			<simple context="mgmt_vdom"    >get vpn ipsec stats crypto    </simple>
 			<simple context="mgmt_vdom"    >diag vpn ike counts           </simple>
 			<simple context="mgmt_vdom"    >diag vpn ike status summary   </simple>
 			<simple context="mgmt_vdom"    >diag vpn ike errors           </simple>
 		</cycle>
 
-		<cycle name="wad" desc="Explicit proxy related output." profile="main" parameters="main">
-			<echo>Running WAD troubleshooting cycle</echo>
+		<cycle name="npu" desc="NPU related outputs." profile="main" parameters="main">
+			<echo>NP6 related outputs.</echo>
 
+			<parser name="NP6IfaceMapping">
+				<store>
+					<param type="np6_ids"  name="np6_ids"/>
+				</store>
+			</parser>
+
+			<foreach list="np6_ids" name="npu_id">
+				<simple context="global"    >diag npu np6 dce ${npu_id}                      </simple>
+				<simple context="global"    >diag npu np6 sse-stats ${npu_id}                </simple>
+				<simple context="global"    >diag npu np6 anomaly-drop ${npu_id}             </simple>
+				<simple context="global"    >diag npu np6 hrx-drop ${npu_id}                 </simple>
+				<simple context="global"    >diag npu np6 session-stats ${npu_id}            </simple>
+				<simple context="global"    >diag npu np6 pdq ${npu_id}                      </simple>
+				<simple context="global"    >diag npu np6 ipsec-stats                        </simple>
+				<simple context="global"    >diag npu np6 synproxy-stats                     </simple>
+				<simple context="global"    >fnsysctl cat /proc/net/np6_${npu_id}/gige-stats </simple>
+				<simple context="global"    >diag npu np6 xgmac-stats ${npu_id}              </simple>
+			</foreach>
+		</cycle>
+
+		<cycle name="wad" desc="Explicit proxy related outputs." profile="main" parameters="main">
 			<parser name="WADSummary">
 				<store> 
 					<param type="wad_contexts_managers"    name="wad_contexts_managers"/> 
