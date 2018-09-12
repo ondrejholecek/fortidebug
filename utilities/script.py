@@ -70,6 +70,7 @@ class Script:
 		else:
 			self.output   = open(args.output, "ab")
 
+		self.real_filename = None
 
 		self.profiles    = { 'default': {} }
 		self.parameters  = {}
@@ -83,11 +84,14 @@ class Script:
 		g = re.search("^(\S+)://(.*)$", self.filename)
 		if g == None:
 			e = xml.etree.ElementTree.parse(self.filename).getroot()
+			self.real_filename = self.filename
 		elif g.group(1) == 'file':
 			e = xml.etree.ElementTree.parse(g.group(2)).getroot()
+			self.real_filename = g.group(2)
 		else:
 			r = requests.get(self.filename)
 			if r.status_code != 200: raise MyException("Unable to download file '%s'" % (self.filename,))
+			self.real_filename = r.url
 			e = xml.etree.ElementTree.fromstring(r.text)
 			
 		# verify we can work with this file
@@ -669,8 +673,10 @@ class Script:
 				'time': str(etime),
 				'parameters' : rp,
 				'flags': {
-					'time_format': etime.time_format,
-					'time_source': etime.time_source,
+					'time_format'   : etime.time_format,
+					'time_source'   : etime.time_source,
+					'filename'      : self.filename,
+					'real_filename' : self.real_filename,
 				},
 			}
 			self.output.write(json.dumps(tmp) + "\n")
