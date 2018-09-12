@@ -9,6 +9,8 @@ import xml.etree.ElementTree
 import requests
 import time
 import paramiko
+import subprocess
+import signal
 
 class ScriptFile:
 	def __init__(self, url):
@@ -18,6 +20,8 @@ class ScriptFile:
 		self.message   = ""
 		self.cycles    = []
 		self.profiles  = []
+
+		self.process   = None
 
 		self.load()
 
@@ -108,6 +112,17 @@ class App(tk.Frame):
 		self.createWidgets()
 
 		self.winfo_toplevel().title("FortiMonitor ScriptGUI")
+	
+	def on_closing(self):
+		self.stop_process()
+		self.master.destroy()
+	
+	def stop_process(self):
+		if self.process != None:
+			if os.name == 'nt':
+				self.process.send_signal(signal.CTRL_BREAK_EVENT)
+			else:
+				self.process.send_signal(signal.SIGINT)
 
 	def create_input(self, parent, row, label, name, width=None, show=None, default=None, isselect=False, islist=False):
 		self.inputs[name] = {}
@@ -230,7 +245,7 @@ class App(tk.Frame):
 
 	def start(self):
 		error = False
-		cmdline = os.path.join("..", "utilities", "script.py") + " "
+		cmdline = [os.path.join("..", "utilities", "script.py")]
 
 		optionals = ('password',)
 		for k in ('host', 'port', 'username', 'password', 'url', 'profile', 'output', 'time'):
@@ -241,15 +256,15 @@ class App(tk.Frame):
 			else:
 				self.inputs[k]['input'].config(background="white")
 
-			if k == 'host': cmdline += " --host " + v 
-			elif k == 'port': cmdline += " --port " + v
-			elif k == 'username': cmdline += " --user " + v
-			elif k == 'password' and len(v) > 0: cmdline += " --password \"" + v + "\""
-			elif k == 'url': cmdline += " --script " + v
-			elif k == 'cycle': cmdline += " --cycle " + v 
-			elif k == 'profile' and v != "<default>": cmdline += " --profile " + v 
-			elif k == 'output': cmdline += " --output \"" + v + "\""
-			elif k == 'time': cmdline += " --cycle-time " + v
+			if k == 'host': cmdline += ("--host", v)
+			elif k == 'port': cmdline += ("--port", v)
+			elif k == 'username': cmdline += ("--user", v)
+			elif k == 'password' and len(v) > 0: cmdline += ("--password", v)
+			elif k == 'url': cmdline += ("--script", v)
+			elif k == 'cycle': cmdline += ("--cycle", v) 
+			elif k == 'profile' and v != "<default>": cmdline += ("--profile", v) 
+			elif k == 'output': cmdline += ("--output", v)
+			elif k == 'time': cmdline += ("--cycle-time", v)
 
 		# cycles
 		cycles = self.inputs['cycle']['input'].curselection()
@@ -260,20 +275,21 @@ class App(tk.Frame):
 			self.inputs['cycle']['input'].config(background="white")
 
 		for cycle in cycles:
-			cmdline += " --cycle " + self.inputs['cycle']['input'].get(cycle)
+			cmdline += ("--cycle", self.inputs['cycle']['input'].get(cycle))
 
 		#
 		if error:
 			tkMessageBox.showerror("Error", "Please fill all the mandatory inputs.")
 			return
 
-		cmdline += " --ignore-ssh-key"
-		#print cmdline
+		cmdline += ("--ignore-ssh-key",)
+		print cmdline
 
 		self.btn_start.config(text='Running')
 		self.btn_start.config(state='disabled')
-		self.master.withdraw()
-		os.system(cmdline)
+#		self.master.withdraw()
+#		os.system(cmdline)
+		self.process = subprocess.Popen(cmdline)
 		self.btn_start.config(text='Start')
 		self.btn_start.config(state='active')
 
@@ -284,5 +300,8 @@ root.attributes("-topmost", True)
 root.focus_force()
 
 app = App(master=root)
-app.mainloop()
-#root.destroy()
+root.protocol("WM_DELETE_WINDOW", app.on_closing)
+try:
+	app.mainloop()
+except KeyboardInterrupt:
+	app.stop_process()
