@@ -51,7 +51,7 @@
 			</parser>
 
 			<foreach list="wad_contexts_managers" name="ctx pid">
-				<set name=">wad:process">manager:${pid} (${ctx})</set>
+				<set name=">wad:process">manager:${pid}:${ctx}</set>
 				<simple context="global"       >diag test app wad ${ctx}         </simple>
 				<simple context="global"       >diag test app wad 1              </simple>
 				<simple context="global"       >diag test app wad 2              </simple>
@@ -62,7 +62,7 @@
 			</foreach>
 
 			<foreach list="wad_contexts_dispatchers" name="ctx pid">
-				<set name=">wad:process">dispatcher:${pid} (${ctx})</set>
+				<set name=">wad:process">dispatcher:${pid}:${ctx}</set>
 				<simple context="global"       >diag test app wad ${ctx}         </simple>
 				<simple context="global"       >diag test app wad 10             </simple>
 				<simple context="global"       >diag test app wad 11             </simple>
@@ -71,7 +71,7 @@
 			</foreach>
 
 			<foreach list="wad_contexts_workers" name="ctx pid">
-				<set name=">wad:process">worker:${pid} (${ctx})</set>
+				<set name=">wad:process">worker:${pid}:${ctx}</set>
 				<simple context="global"       >diag test app wad ${ctx}         </simple>
 				<simple context="global"       >diag test app wad 13             </simple>
 				<simple context="global"       >diag test app wad 22             </simple>
@@ -82,7 +82,7 @@
 			</foreach>
 
 			<foreach list="wad_contexts_informers" name="ctx pid">
-				<set name=">wad:process">informer:${pid} (${ctx})</set>
+				<set name=">wad:process">informer:${pid}:${ctx}</set>
 				<simple context="global"       >diag test app wad ${ctx}         </simple>
 				<simple context="global"       >diag test app wad 110            </simple>
 				<simple context="global"       >diag test app wad 112            </simple>
