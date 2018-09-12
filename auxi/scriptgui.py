@@ -112,17 +112,6 @@ class App(tk.Frame):
 		self.createWidgets()
 
 		self.winfo_toplevel().title("FortiMonitor ScriptGUI")
-	
-	def on_closing(self):
-		self.stop_process()
-		self.master.destroy()
-	
-	def stop_process(self):
-		if self.process != None:
-			if os.name == 'nt':
-				self.process.send_signal(signal.CTRL_BREAK_EVENT)
-			else:
-				self.process.send_signal(signal.SIGINT)
 
 	def create_input(self, parent, row, label, name, width=None, show=None, default=None, isselect=False, islist=False):
 		self.inputs[name] = {}
@@ -283,13 +272,14 @@ class App(tk.Frame):
 			return
 
 		cmdline += ("--ignore-ssh-key",)
-		print cmdline
 
 		self.btn_start.config(text='Running')
 		self.btn_start.config(state='disabled')
-#		self.master.withdraw()
-#		os.system(cmdline)
-		self.process = subprocess.Popen(cmdline)
+		self.master.withdraw()
+		if os.name == 'nt':
+			self.process = subprocess.Popen(cmdline, shell=True)
+		else:
+			self.process = subprocess.Popen(cmdline, shell=False)
 		self.btn_start.config(text='Start')
 		self.btn_start.config(state='active')
 
@@ -300,8 +290,4 @@ root.attributes("-topmost", True)
 root.focus_force()
 
 app = App(master=root)
-root.protocol("WM_DELETE_WINDOW", app.on_closing)
-try:
-	app.mainloop()
-except KeyboardInterrupt:
-	app.stop_process()
+app.mainloop()
