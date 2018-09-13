@@ -269,12 +269,15 @@ class Script:
 		for child in c:
 			self.last_command_time      = ParserCurrentTime(self.sshc).get()
 			self.last_command_time_real = time.time()
+			use_ic_sleep                = False
 
 			if child.tag == 'simple':
 				self.do_simple_command(child, profile, params)
+				use_ic_sleep = True
 
 			elif child.tag == 'continuous':
 				self.do_continuous_command(child, profile, params)
+				use_ic_sleep = True
 
 			elif child.tag == 'foreach':
 				self.do_foreach(child, profile, params)
@@ -284,6 +287,7 @@ class Script:
 	
 			elif child.tag == 'parser':
 				self.do_parser(child, profile, params)
+				use_ic_sleep = True
 	
 			elif child.tag == 'version':
 				self.do_version(child, profile, params)
@@ -306,9 +310,8 @@ class Script:
 			else:
 				print >>sys.stderr, "Warning: unknown cycle command '%s', ignoring" % (child.tag,)
 
-			if profile['intercommand_sleep'] > 0:
+			if profile['intercommand_sleep'] > 0 and use_ic_sleep:
 				time.sleep(profile['intercommand_sleep'])
-
 
 	def element_get_context(self, cmd, profile, params):
 		vdom    = None
