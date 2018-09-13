@@ -2,11 +2,15 @@
 
 This is a set of utilities to make FortiGate troubleshooting easier. 
 
-The project consists of 4 parts:
-- Wrapper around [Paramiko](http://www.paramiko.org/) to correctly communicate with FortiGate over SSH. 
-- Output parsers for different commands to present the outputs in a form that is further usable in programs.
-- Definiton of different FortiGate models that is needed by some utilities (e.g. NIC to NP mapping).
-- Utilities that use both of the previous parts to merge and present the collected outputs in a human friendly form.
+All the utilities are command line based and connect to the FortiGate over SSH.
+
+## Utilities 
+
+If you are interested in automatic command execution based on (possibly predefined) XML files, check the [script.py utility wiki page](https://github.com/ondrejholecek/fortimonitor/wiki/utilities-script.py).
+
+For the comprehensive list of the all the utilities and their description, please see [utilities wiki page](https://github.com/ondrejholecek/fortimonitor/wiki/Utilities).
+
+## Supported client systems
 
 At this moment (Sep 7, 2018) all the utilities were tested and work correctly on (all 64bit):
 - MacOS High Sierra (10.13.6) with [Homebrew](https://brew.sh/)
@@ -17,56 +21,14 @@ At this moment (Sep 7, 2018) all the utilities were tested and work correctly on
 Note that Debian 8 (Jessie) does not have the right version of Paramiko and it is quite challenging
 to make this program running there. I would rather suggest to upgrade to supported Debian version.
 
+## Supported FortiGate hardware and fireware
+
 All FortiGate hardware should be supported, however some utilities need a definition of the platform,
 which is currently very incomplete. Please raise an "Issue" here to ask for the right definition.
 
 Supported should be all FortiOS versions starting with 5.4, however it was not tested and there might
 be some differencies in different versions that might make some utilities incompatible. Please raise
 an "Issue" here if you find such problem.
-
-## Installing prerequisites
-
-These utilities are written in Python 2.7 and need following libraries:
-- paramiko
-- requests
-- getpass
-
-### Windows 
-
-The easiest way how to install on Windows is:
-- Download [the lastest compressed version](https://github.com/ondrejholecek/fortimonitor/archive/master.zip)
-- Extract it to its final location
-- Navigate to "init" sub-directory and double-click on "setup.bat"
-
-Alternatively, you can set it up manually:
-- Download and install [Python 2.7 for Windows 64bit installer](https://www.python.org/ftp/python/2.7.15/python-2.7.15.amd64.msi) or [Python 2.7 for Windows 32bit installer](https://www.python.org/ftp/python/2.7.15/python-2.7.15.msi)
-- Use Pip to install all necessary libraries
-
-### Linux
-
-Use the package manager to install Python 2.7 and Paramiko for Python. On Debian you can install both via apt-get:
-
-```
-apt-get install python2.7 python-paramiko python-requests
-```
-
-Alternatively, you can install Python and Pip via apt-get and then Paramiko via Pip, however this might need some
-more libraries to be installed in their development versions:
-
-```
-apt-get install python2.7 python-pip python-dev libssl-dev
-pip install paramiko
-```
-
-### MacOS
-
-Use [Homebrew](https://brew.sh/) to install Python and Pip. Then use Pip to install Paramiko:
-
-```
-brew install python
-pip install paramiko requests
-```
-
 
 ## Usage
 
@@ -119,9 +81,4 @@ Most of the utilities also accept "--max-cycles" option which limits the number 
 is unlimited, so the program will run "forever".
 
 
-## Utilities
-
-If you are interested in automatic command execution based on (possibly predefined) XML files, check the [script.py utility wiki page](https://github.com/ondrejholecek/fortimonitor/wiki/utilities-script.py).
-
-For the comprehensive list of the all the utilities and their description, please see [utilities wiki page](https://github.com/ondrejholecek/fortimonitor/wiki/Utilities).
 
