@@ -1,6 +1,9 @@
 #!/bin/sh
 
+# not used
+
 file=`echo $GIT_INDEX_FILE | sed 's/\.git\/index.lock/VERSION.txt/'`
 current=`cat $file`
 new=$((current + 1))
 echo $new >$file
+
