@@ -160,13 +160,18 @@ class Script:
 
 		# otherwise we need to load it from xml file
 		all_plists = self.root.find('plists')
-		if all_plists == None:
-			raise MyException("Script file does not contain any parameter lists")
+		if all_plists != None:
+			params = all_plists.find("./parameters[@name='%s']" % (name,))
+		else:
+			params = None
 
-		params = all_plists.find("./parameters[@name='%s']" % (name,))
+		# if the parameter list does not exist, just use the empty plist
 		if params == None:
-			raise MyException("Cannot find parameter list with name '%s'" % (name,))
+			print >>sys.stderr, "Warning: plist '%s' does not exist, using the empty plist" % (name,)
+			self.parameters[name] = {}
+			return self.parameters[name]
 
+		# ... otherwise when it does exist...
 		# load parameters from configuration
 		p = {}
 		for param in params:
