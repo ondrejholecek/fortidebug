@@ -1,4 +1,5 @@
 #!/bin/sh
 
-echo aaa
-set
+file=`echo $GIT_INDEX_FILE | sed 's/\.git\/index.lock/VERSION.txt/'`
+current=`cat $file`
+echo "current: $current"
