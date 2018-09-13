@@ -1,0 +1,15 @@
+<fortimonitor_scriptfile version="1">
+	<cycles>
+		
+		<cycle name="test" desc="Very simple testing cycle.">
+			<echo>This is a simple testing cycle.</echo>
+
+			<simple context="global"    >get system status                       </simple>
+			<simple context="global"    >get system performance status           </simple>
+			<simple context="mgmt_vdom" >diagnose firewall packet distribution   </simple>
+			<simple context="mgmt_vdom" >diagnose snmp ip frags                  </simple>
+		</cycle>
+
+	</cycles>
+</fortimonitor_scriptfile>
+
