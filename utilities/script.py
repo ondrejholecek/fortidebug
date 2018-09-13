@@ -131,20 +131,24 @@ class Script:
 
 		# otherwise we need to load it from xml file
 		all_profiles = self.root.find('profiles')
-		if all_profiles == None:
-			raise MyException("Script file does not contain any profiles")
+		if all_profiles != None:
+			prof = all_profiles.find("./profile[@name='%s']" % (name,))
+		else:
+			prof = None
 
-		prof = all_profiles.find("./profile[@name='%s']" % (name,))
-		if prof == None:
-			raise MyException("Cannot find profile with name '%s'" % (name,))
-
-		#
+		# any profile is based on 'default' profile with changes
 		p = copy.deepcopy(self.profiles['default'])
-		for opt in prof:
-			if opt.tag == 'intercommand_sleep':
-				p['intercommand_sleep'] = float(opt.text)
-			else:
-				raise MyException("Invalid profile option '%s'" % (opt.tag,))
+
+		# if the requested profile does not exist, just use the default unchanged
+		if prof == None:
+			print >>sys.stderr, "Warning: profile '%s' does not exist, using the default profile" % (name,)
+
+		else:
+			for opt in prof:
+				if opt.tag == 'intercommand_sleep':
+					p['intercommand_sleep'] = float(opt.text)
+				else:
+					raise MyException("Invalid profile option '%s'" % (opt.tag,))
 
 		self.profiles[name] = p
 		return self.profiles[name]
@@ -718,4 +722,3 @@ if __name__ == '__main__':
 	except KeyboardInterrupt:
 		sshc.destroy()
 
-	script.destroy()

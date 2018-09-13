@@ -6,11 +6,6 @@
 -->
 
 <fortimonitor_scriptfile version="1">
-	<profiles>
-		<profile name="main">
-			<intercommand_sleep>0.5</intercommand_sleep>
-		</profile>
-	</profiles>
 
 	<plists>
 		<parameters name="main">
