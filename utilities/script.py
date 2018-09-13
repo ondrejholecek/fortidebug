@@ -10,6 +10,7 @@ from _common import ssh, cycle, prepend_timestamp
 
 import xml.etree.ElementTree
 
+
 import re
 import sys
 import copy
@@ -84,6 +85,9 @@ class Script:
 
 		self.root     = None
 
+		self.version_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "VERSION.txt")
+		self.version = int(open(self.version_file).read())
+
 		self.load()
 
 	def destroy(self):
@@ -112,7 +116,14 @@ class Script:
 			version = int(e.attrib['version'])
 		except:
 			raise MyException("The script file does not contain a version")
-	
+
+		# if the version of FortiMonitor is lower than the version request by the XML file
+		# we cannot continue
+		if self.version < version:
+			print >>sys.stderr, "Version of FortiMonitor application is %i, but the XML script requires at least %i" % (self.version, version)
+			print >>sys.stderr, "... please update the FortiMonitor to the latest version to run this script"
+			sys.exit(10)
+
 		if version > 1:
 			raise MyException("The script file format is newer than this utility can process")
 
@@ -729,5 +740,3 @@ if __name__ == '__main__':
 		cycle(script.do, {}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
 	except KeyboardInterrupt:
 		sshc.destroy()
-
-# test 1
