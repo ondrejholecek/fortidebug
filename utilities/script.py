@@ -79,7 +79,7 @@ class Script:
 
 		self.real_filename = None
 
-		self.profiles    = { 'default': {} }
+		self.profiles    = {}
 		self.parameters  = {}
 
 		self.root     = None
@@ -117,7 +117,7 @@ class Script:
 			raise MyException("The script file format is newer than this utility can process")
 
 		self.profiles['default'] = {
-			'intercommand_sleep'   : 0.1,
+			'intercommand_sleep'   : 1.0,
 		}
 
 		self.parameters['default'] = {}
