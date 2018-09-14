@@ -2,88 +2,48 @@
 
 This is a set of utilities to make FortiGate troubleshooting easier. 
 
-Most of the utilities are command line based and connect to the FortiGate over SSH.
-
 ## Utilities 
 
-If you are interested in automatic command execution based on (possibly predefined) XML files, check the [script.py utility wiki page](https://github.com/ondrejholecek/fortimonitor/wiki/utilities-script.py).
+Most of the [utilities](https://github.com/ondrejholecek/fortimonitor/wiki/Utilities) are command line based and connect to the FortiGate over SSH.
+
+Different [utilities](https://github.com/ondrejholecek/fortimonitor/wiki/Utilities) can execute various commads on FortiGate and usually create some kind of human understandable summary.  Some can represent the output in semi-graphical form more suitable for real-time troubleshooting and others can create an output prepared for further analysis with custom scripts.
+
+If you are interested in automatic command execution based on (predefined or custom made) XML files, check the [script.py utility wiki page](https://github.com/ondrejholecek/fortimonitor/wiki/utilities-script.py).
 
 For the comprehensive list of the all the utilities and their description, please see [utilities wiki page](https://github.com/ondrejholecek/fortimonitor/wiki/Utilities).
 
 ## Supported client systems
 
-At this moment (Sep 7, 2018) all the utilities were tested and work correctly on (all 64bit):
-- MacOS High Sierra (10.13.6) with [Homebrew](https://brew.sh/)
-- Linux Debian 10 (Buster)
-- Linux Debian 9 (Stretch)
+At this moment all the utilities should work correctly on:
 - Windows 10 
+- Linux Debian 9 (Stretch) and newer
+- MacOS High Sierra (10.13.6) with [Homebrew](https://brew.sh/)
 
-Note that Debian 8 (Jessie) does not have the right version of Paramiko and it is quite challenging
-to make this program running there. I would rather suggest to upgrade to supported Debian version.
+## Installation and usage
 
-## Supported FortiGate hardware and fireware
+The project is hosted on [GitHub](https://github.com/ondrejholecek/fortimonitor) and you can simply download or clone it. For detailed instructions see the [Installation page on wiki](https://github.com/ondrejholecek/fortimonitor/wiki/Installation).
 
-All FortiGate hardware should be supported, however some utilities need a definition of the platform,
-which is currently very incomplete. Please raise an "Issue" here to ask for the right definition.
+Most of the utilities are controlled in a similar way and they share the same basic parameters. To find how to use them together with desciption of the shared parameters, see the [Usage page on wiki](https://github.com/ondrejholecek/fortimonitor/wiki/Usage).
+
+Each utility also has its own page on Wiki where the local parameters, bahaviors and priciples are written. You can find the links to all utilities on the [Utilities wiki page](https://github.com/ondrejholecek/fortimonitor/wiki/Utilities).
+
+## Supported FortiGate hardware 
+
+All FortiGate hardware should be supported. 
+
+Some utilities need a definition of the platform (only [nic_utilization.py](https://github.com/ondrejholecek/fortimonitor/wiki/utilization-nic_utilization.py) at this moment), which is currently very incomplete. It is not a problem to add a new definition, please just raise an "Issue" here.
+
+## Supported FortiOS versions
 
 Supported should be all FortiOS versions starting with 5.4, however it was not tested and there might
 be some differencies in different versions that might make some utilities incompatible. Please raise
 an "Issue" here if you find such problem.
 
-## Usage
+## Author
 
-Basicaly all the programs you may want to use are located in "utilities" directory. All of them accept "-h" parameter
-to display the options that can be used. Following options are shared by most of the programs:
+The project is written and maintained by [Ondrej Holecek](https://www.holecek.eu/).
 
-```
---host HOST                 FortiGate hostname or IP address
---user USER                 User name to log in as, default "admin"
---password PASSWORD         Password to log in with, default empty
---credfile CREDFILE         File to read the credentials from 
---port PORT                 SSH port, default 22
---time-format {human-with-offset,human,timestamp,iso}  Format of the date and time
---time-source {device,local}                           How to retrieve data and time
---debug                     Enable debug outputs
---manual                    Show manual
---ignore-ssh-key            Ignore SSH server key problems
---max-cycles MAX_CYCLES     Maximum cycles to run
-```
-
-### Logging in 
-You can either provide the username and password on command line with parameters `--user` and `--password` or you can
-save them in a file and use `--credfile` option. The file should consist of two lines, the first one being the username 
-and the second the password.
-
-### Timestamps
-Most of the programs automatically prepend every output line with a timestamp to make it easy to save the output into a text
-file and analyze it later. 
-
-By default, the timestamp is printed in human readable format with the timezone offset (e.g. `2018-09-04 11:33:27+02:00`) but
-it can be changed using `--time-format` parameter to the humand readable without offset or a unix timestamp which is better
-usable in subsequent scripts.
-
-The time on the FortiGate device is used by default and the timezone is calculated based on the different from the local
-time on your computer (that means the local computer time must be correct). Alternatively you can choose to use local time
-directly with the `--time-source` option. 
-
-### Security
-The programs expect that the public SSH key of the FortiGate is already present in the "known hosts" file (that happens when
-you connect to the FortiGate for first time using the standard SSH client. If you don't care about the remote key validity
-(or you are running this on Windows) the `--ignore-ssh-key` parameter can be used.
-
-### Limiting the number of cycles
-
-Most of the utilities  accept `--max-cycles` option which limits the number of cycles to go through. 
-
-By default this is unlimited, so the program will run "forever".
-
-### More options
-
-There are another parameters that vary depending on what program you are running. All utilities accept `-h` option that show
-both the shared and the local options.
-
-Some utilities also accept `--manual` parameter which prints a more detailed information about the utility.
-
+This is a private project that I write in my free time and it is in no way an official Fortinet product.
 
 
 
