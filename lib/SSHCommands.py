@@ -3,6 +3,7 @@
 import paramiko
 import time
 import re
+import random
 
 # DEBUG vvv
 def rss():
@@ -42,7 +43,8 @@ class SSHCommands:
 			'build': None,
 			'compilation': None,
 		}
-		self.info['connected_on'] = time.time()
+		self.info['connected_on']    = time.time()
+		self.info['connected_nonce'] = random.randint(1000000, 9999999)
 	
 		self.client  = None
 		self.channel = None

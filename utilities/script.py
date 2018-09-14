@@ -245,6 +245,8 @@ class Script:
 			raise KeyboardInterrupt()
 	
 		elif self.cycle != None:
+			self.prepend_commands()
+
 			for sc in self.cycle:
 				c = self.root.find("./cycles/cycle[@name='%s']" % (sc,))
 				if c == None:
@@ -255,6 +257,37 @@ class Script:
 		else:
 			print >>sys.stderr, "Nothing to do. Specify the cycle name with '--cycle' option or use '--list' option to find out the cycle name."
 			sys.exit(1)
+
+	def prepend_commands(self):
+		prepends = (
+			(None, 'get system status'),
+			(None, 'get system performance status'),
+			(None, 'fnsysctl cat /proc/uptime'),
+		)
+
+		outs  = []
+		for vdom, cmd in prepends:
+			etime = ParserCurrentTime(self.sshc).get()
+			outs.append({
+				'command'    : cmd,
+				'context'    : vdom,
+				'output'     : sshc.clever_exec(cmd, vdom),
+				'time'       : str(etime),
+				'parameters' : {},
+			})
+
+		tmp = {
+			'internal_commands': outs,
+			'flags': {
+				'time_format'      : etime.time_format,
+				'time_source'      : etime.time_source,
+				'filename'         : self.filename,
+				'real_filename'    : self.real_filename,
+			},
+			'info': self.sshc.get_info(),
+		}
+
+		self.save_result(':internal', None, tmp, etime, {'>automatic': True, '>stdout': False})
 
 	def do_cycle(self, c):
 		# if there is a profile name we will use it, otherwise the default profile is used
@@ -701,21 +734,13 @@ class Script:
 		if self.output != None:
 			info = self.sshc.get_info()
 			tmp = {
-				'command': command,
-				'context': vdom,
-				'output' : output,
-				'time': str(etime),
-				'parameters' : rp,
-				'flags': {
-					'time_format'   : etime.time_format,
-					'time_source'   : etime.time_source,
-					'filename'      : self.filename,
-					'real_filename' : self.real_filename,
-					'serial'        : info['serial'],
-					'version'       : info['version'],
-					'hostname'      : info['hostname'],
-					'connected_on'  : int(info['connected_on']),
-				},
+				'command'          : command,
+				'context'          : vdom,
+				'output'           : output,
+				'time'             : str(etime),
+				'parameters'       : rp,
+				'connected_on'     : int(info['connected_on']),
+				'connected_nonce'  : info['connected_nonce'],
 			}
 
 			if self.output_buffer_length == 0:
@@ -727,7 +752,12 @@ class Script:
 				if len(self.output_buffer) >= self.output_buffer_length:
 					self.save_result_compress()
 
-		if not self.quiet:
+		if 'stdout' in rp and rp['stdout'] == False:
+			stdout = True
+		else:
+			stdout = False
+
+		if not self.quiet and not stdout:
 			print prepend_timestamp("<<< %s" % (command,), etime, 'script')
 			print prepend_timestamp(str(output), etime, 'script')
 			
