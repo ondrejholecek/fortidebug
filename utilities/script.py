@@ -288,7 +288,7 @@ class Script:
 			'info': self.sshc.get_info(),
 		}
 
-		self.save_result(None, None, tmp, etime, {'>automatic': '1', '>stdout': '0'})
+		self.save_result(None, None, tmp, etime, {'>stdout': '0'}, {'type':'automatic'})
 
 	def do_cycle(self, c):
 		# if there is a profile name we will use it, otherwise the default profile is used
@@ -401,7 +401,7 @@ class Script:
 	
 		# run the command
 		result = sshc.clever_exec(fortios_cmd, vdom)
-		self.save_result(fortios_cmd, vdom, result, self.last_command_time, params)
+		self.save_result(fortios_cmd, vdom, result, self.last_command_time, params, {'type':'simple'})
 
 	def do_continuous_command(self, cmd, profile, params):
 		
@@ -448,14 +448,15 @@ class Script:
 		def sub_result(data, cache):
 			real_diff = time.time() - self.last_command_time_real
 			adj_time  = (self.last_command_time + datetime.timedelta(seconds=real_diff)).replace(microsecond=0)
-			self.save_result(fortios_cmd, vdom, data, adj_time, params)
+			self.save_result(fortios_cmd, vdom, data, adj_time, params, {'type':'continuous', 'continuous_index':cache['index']})
+			cache['index'] += 1
 
 		def sub_exit(cache):
 			if time.time() > end_time: return quit
 			else: return None
 	
 		# run the command
-		sshc.continuous_exec(fortios_cmd, sub_divide, sub_result, sub_exit, {'cache':{}}, vdom)
+		sshc.continuous_exec(fortios_cmd, sub_divide, sub_result, sub_exit, {'cache':{'index':0}}, vdom)
 
 	def do_foreach(self, cmd, profile, params):
 		for tmp in ('list', 'name'):
@@ -578,7 +579,7 @@ class Script:
 			raise MyException("Parser: unable to call parser '%s': '%s'" % (pname, str(e),))
 
 		if not silent:
-			self.save_result("Parser:%s:%s" % (pname, iparams,), None, result, self.last_command_time, params)
+			self.save_result("Parser:%s:%s" % (pname, iparams,), None, result, self.last_command_time, params, {'type':'parser', 'parser_name':pname, 'parser_input':iparams})
 
 		# if we want to store some parameters, do it
 		store = cmd.find('store')
@@ -720,13 +721,13 @@ class Script:
 		params[cmd.attrib['name']] = merge
 
 	def do_dump_params(self, cmd, profile, params):
-		self.save_result("internal:dump_params", None, params, self.last_command_time, params)
+		self.save_result("internal:dump_params", None, params, self.last_command_time, params, {'type':'dump_params'})
 
 	def do_echo(self, cmd, profile, params):
 		v = ">>> %s" % (self.element_get_command(cmd, profile, params),)
 		print prepend_timestamp(v, self.last_command_time, 'script')
 
-	def save_result(self, command, vdom, output, etime, params):
+	def save_result(self, command, vdom, output, etime, params, cinfo):
 		rp = {}
 		for p in params.keys():
 			if p[0] != '>': continue
@@ -742,6 +743,7 @@ class Script:
 				'parameters'       : rp,
 				'connected_on'     : int(info['connected_on']),
 				'nonce'            : info['nonce'],
+				'info'             : cinfo,
 			}
 
 			if self.output_buffer_length == 0:
