@@ -287,7 +287,7 @@ class Script:
 			'info': self.sshc.get_info(),
 		}
 
-		self.save_result(None, None, tmp, etime, {'>automatic': True, '>stdout': False})
+		self.save_result(None, None, tmp, etime, {'>automatic': '1', '>stdout': '0'})
 
 	def do_cycle(self, c):
 		# if there is a profile name we will use it, otherwise the default profile is used
@@ -752,12 +752,12 @@ class Script:
 				if len(self.output_buffer) >= self.output_buffer_length:
 					self.save_result_compress()
 
-		if 'stdout' in rp and rp['stdout'] == False:
-			stdout = True
+		if 'stdout' in rp and str(rp['stdout']) == '0':
+			no_stdout = True
 		else:
-			stdout = False
+			no_stdout = False
 
-		if not self.quiet and not stdout:
+		if not self.quiet and not no_stdout:
 			print prepend_timestamp("<<< %s" % (command,), etime, 'script')
 			print prepend_timestamp(str(output), etime, 'script')
 			
