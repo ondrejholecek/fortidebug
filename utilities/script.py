@@ -699,6 +699,7 @@ class Script:
 			else: rp[p[1:]] = params[p]
 
 		if self.output != None:
+			info = self.sshc.get_info()
 			tmp = {
 				'command': command,
 				'context': vdom,
@@ -710,6 +711,10 @@ class Script:
 					'time_source'   : etime.time_source,
 					'filename'      : self.filename,
 					'real_filename' : self.real_filename,
+					'serial'        : info['serial'],
+					'version'       : info['version'],
+					'hostname'      : info['hostname'],
+					'connected_on'  : int(info['connected_on']),
 				},
 			}
 

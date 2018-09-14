@@ -42,6 +42,7 @@ class SSHCommands:
 			'build': None,
 			'compilation': None,
 		}
+		self.info['connected_on'] = time.time()
 	
 		self.client  = None
 		self.channel = None
