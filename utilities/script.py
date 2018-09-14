@@ -774,4 +774,7 @@ if __name__ == '__main__':
 	try:
 		cycle(script.do, {}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
 	except KeyboardInterrupt:
-		sshc.destroy()
+		pass
+	
+	script.destroy()
+	sshc.destroy()
