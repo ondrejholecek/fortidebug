@@ -5,11 +5,11 @@ import os
 # to be able to import our modules from the directory above
 os.sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from lib.Signature import Signature
 from parsers.CurrentTime import ParserCurrentTime
 from _common import ssh, cycle, prepend_timestamp
 
 import xml.etree.ElementTree
-
 
 import re
 import sys
@@ -20,9 +20,13 @@ import requests
 import datetime
 import bz2
 
+default_public_key = os.path.join((os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "pubkeys/default.pem")
+
 sshc, args = ssh([
 	{ 'name':'--cycle-time',   'type':int, 'default':30,  'help':'How long should each cycle take' },
 	{ 'name':'--script',       'required':True,  'help':'The XML file with commands to execute' },
+	{ 'name':'--ignore-signature',  'default':False, 'action':'store_true',  'help':'Do not verify signature (dangerous!)' },
+	{ 'name':'--public-key',   'default':default_public_key, 'help':'Public key for verifying XML file signature' },
 	{ 'name':'--list',         'default':False, 'action':'store_true',  'help':'List existing cycles and quit' },
 	{ 'name':'--cycle',        'default':None, 'action': 'append', 'help':'Run the specified cycle (can repeat)' },
 	{ 'name':'--profile',      'default':None, 'help':'Override the default profile name for the cycle' },
@@ -69,6 +73,7 @@ class Script:
 		self.profile  = args.profile
 		self.params   = args.param
 		self.quiet    = args.quiet
+		self.noverify = args.ignore_signature
 
 		self.output_buffer_length = args.compress
 		self.output_buffer        = []
@@ -104,7 +109,20 @@ class Script:
 			self.real_filename = g.group(2)
 		else:
 			r = requests.get(self.filename)
-			if r.status_code != 200: raise MyException("Unable to download file '%s'" % (self.filename,))
+			if r.status_code != 200: raise MyException("Unable to download XML file '%s'" % (self.filename,))
+
+			if not self.noverify:
+				# download signature file
+				sig = requests.get(r.url+".sig")
+				if sig.status_code != 200: raise MyException("Unable to download signature file '%s'.\nChecking the signature of URL files is enabled by default and it is dangerous to disable it!" % (r.url+".sig",))
+				# verify signature
+				try:
+					s = Signature(public_key_file=args.public_key)
+				except:
+					raise MyException("Unable to load public key.\nChecking the signature of URL files is enabled by default and it is dangerous to disable it!")
+				if not s.verify(r.text, sig.text):
+					raise MyException("XML file signature is not valid.\nChecking the signature of URL files is enabled by default and it is dangerous to disable it!")
+
 			self.real_filename = r.url
 			e = xml.etree.ElementTree.fromstring(r.text)
 			
@@ -773,11 +791,20 @@ class Script:
 			self.output_buffer = []
 
 if __name__ == '__main__':
-	script = Script(sshc, args)
+	error = False
 	try:
-		cycle(script.do, {}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
-	except KeyboardInterrupt:
-		pass
-	
-	script.destroy()
+		script = Script(sshc, args)
+		try:
+			cycle(script.do, {}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
+		except KeyboardInterrupt:
+			pass
+	except MyException, e:
+		print str(e)
+		error = True
+	else:
+		script.destroy()
+
 	sshc.destroy()
+
+	if error: sys.exit(1)
+	else: sys.exit(0)
