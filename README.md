@@ -43,7 +43,7 @@ an "Issue" here if you find such problem.
 
 The project is written and maintained by [Ondrej Holecek](https://www.holecek.eu/).
 
-This is a private project that I write in my free time and it is in no way an official Fortinet product.
+This is a private project that I write in my free time and it is not an official Fortinet product.
 
 
 
