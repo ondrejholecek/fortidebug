@@ -287,7 +287,7 @@ class Script:
 			'info': self.sshc.get_info(),
 		}
 
-		self.save_result(':internal', None, tmp, etime, {'>automatic': True, '>stdout': False})
+		self.save_result(None, None, tmp, etime, {'>automatic': True, '>stdout': False})
 
 	def do_cycle(self, c):
 		# if there is a profile name we will use it, otherwise the default profile is used
@@ -740,7 +740,7 @@ class Script:
 				'time'             : str(etime),
 				'parameters'       : rp,
 				'connected_on'     : int(info['connected_on']),
-				'connected_nonce'  : info['connected_nonce'],
+				'nonce'            : info['nonce'],
 			}
 
 			if self.output_buffer_length == 0:
