@@ -283,6 +283,7 @@ class Script:
 				'time_source'      : etime.time_source,
 				'filename'         : self.filename,
 				'real_filename'    : self.real_filename,
+				'version'          : self.version,
 			},
 			'info': self.sshc.get_info(),
 		}
