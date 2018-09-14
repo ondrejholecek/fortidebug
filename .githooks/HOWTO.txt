@@ -1,5 +1,0 @@
-To change the hooks directory:
-
-git config core.hooksPath .githooks
-
-
