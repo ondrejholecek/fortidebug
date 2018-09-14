@@ -14,7 +14,7 @@ import sys
 
 sshc, args = ssh([
 	{ 'name':'--cycle-time',   'type':int, 'default':5,  'help':'How long should each cycle take' },
-	{ 'name':'--command',      'required':True,  'help':'What command to keep running' },
+	{ 'name':'--command',      'required':True, 'action':'append', 'help':'What command to keep running, can repeat' },
 	{ 'name':'--vdom',         'default':None, 'help':'VDOM to use when executing the command' },
 	{ 'name':'--mgmt-vdom',    'default':False, 'action':'store_true',  'help':'Use management VDOM to execute the command' },
 	{ 'name':'--grep',         'default':None, 'help':'Show only lines matching the regular expression' },
@@ -24,21 +24,36 @@ Execute specific command every `--cycle-time`.
 If there are VDOMs enabled on the device, then by default the command is execute in 'global' context,
 but a specific VDOM can be used with `--vdom` option or `--mgmt-vdom` to use the management VDOM automatially.
 
+The `--command` option can be repeated many times. If the context in some `--command` has to be different
+than the context set globally with the other parameters, the command can start with '<...>' modifier.
+The empty '<>' means to run it in management VDOM, '<global>' in global context and anything else
+is used as the VDOM name.
+
 Optionally you can use `--grep` option to only print the lines matching the regular expression.
 """)
 
-def do(sshc, command, vdom, grep):
+def do(sshc, commands, vdom, grep):
 	etime = ParserCurrentTime(sshc).get()
 	
-	if grep == None:
-		print simple_command_with_timestamp(sshc, etime, command, info=command, vdom=vdom)
-	else:
-		out = sshc.clever_exec(command, vdom)
-		for line in out.split("\n"):
-			if not grep.search(line): continue
-			print prepend_timestamp(line, etime, command)
+	for command in commands:
+		g = re.search('^<(.*?)>\s*(.*?)\s*$', command)
+		if not g:
+			this_vdom    = vdom
+			this_command = command
+		else:
+			this_vdom    = g.group(1)
+			this_command = g.group(2)
+			if this_vdom.lower() == 'global': this_vdom = None
 
-	sys.stdout.flush()
+		if grep == None:
+			print simple_command_with_timestamp(sshc, etime, this_command, info=this_command, vdom=this_vdom)
+		else:
+			out = sshc.clever_exec(this_command, this_vdom)
+			for line in out.split("\n"):
+				if not grep.search(line): continue
+				print prepend_timestamp(line, etime, this_command)
+	
+		sys.stdout.flush()
 
 if __name__ == '__main__':
 	#
@@ -60,7 +75,7 @@ if __name__ == '__main__':
 	try:
 		cycle(do, {
 			'sshc': sshc, 
-			'command': args.command,
+			'commands': args.command,
 			'vdom': vdom,
 			'grep': grep,
 		}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
