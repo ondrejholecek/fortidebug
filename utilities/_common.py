@@ -11,7 +11,7 @@ import time
 import getpass
 
 def ssh(args=(), manual=''):
-	parser = argparse.ArgumentParser(description='FortiMonitor')
+	parser = argparse.ArgumentParser(description='FortiDebug')
 
 	# add global arguments
 	parser.add_argument('--host', required=True, help='FortiGate hostname or IP address')

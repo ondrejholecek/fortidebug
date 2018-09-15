@@ -1,11 +1,11 @@
 <!-- 
-	FortiMonitor "script.py" sample XML input.
+	FortiDebug "script.py" sample XML input.
 
 	This file is used to test new features implemented in the utility and
 	it should contain more-or-less all available features.
 -->
 
-<fortimonitor_scriptfile version="1">
+<fortidebug_scriptfile version="1">
 	<!-- Profiles control the behavior of the program. 
 
 	     This is not modifiable from the program. Only on the command line, different profile
@@ -234,4 +234,4 @@
 			<simple>diag test app ipsm ${test}</simple>
 		</cycle>
 	</cycles>
-</fortimonitor_scriptfile>
+</fortidebug_scriptfile>

@@ -78,7 +78,7 @@ class ScriptFile:
 					return
 			
 		# verify we can work with this file
-		if e.tag != "fortimonitor_scriptfile":
+		if e.tag != "fortidebug_scriptfile":
 			self.status_ok = False
 			self.message   = "This is not correct script file"
 			return
@@ -111,7 +111,7 @@ class App(tk.Frame):
 		self.pack()
 		self.createWidgets()
 
-		self.winfo_toplevel().title("FortiMonitor ScriptGUI")
+		self.winfo_toplevel().title("FortiDebug ScriptGUI")
 
 	def create_input(self, parent, row, label, name, width=None, show=None, default=None, isselect=False, islist=False):
 		self.inputs[name] = {}
@@ -151,7 +151,7 @@ class App(tk.Frame):
 
 		# Widget group - Script parameters
 		group_script = tk.LabelFrame(self, text="Script options", padx=5, pady=5)
-		self.create_input(group_script, 0, "Script URL:", "url", 50, default="https://scripts.fortimonitor.com/global/latest.xml")
+		self.create_input(group_script, 0, "Script URL:", "url", 50, default="https://scripts.fortidebug.com/global/latest.xml")
 
 		self.btn_load = tk.Button(group_script, text="Load", command=self.script_entered)
 		self.btn_load.grid(row=1, column=1, sticky="we")

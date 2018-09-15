@@ -127,19 +127,19 @@ class Script:
 			e = xml.etree.ElementTree.fromstring(r.text)
 			
 		# verify we can work with this file
-		if e.tag != "fortimonitor_scriptfile":
-			raise MyException("The file '%s' is not FortiMonitor script file" % (self.filename,))
+		if e.tag != "fortidebug_scriptfile":
+			raise MyException("The file '%s' is not FortiDebug script file" % (self.filename,))
 		
 		try:
 			version = int(e.attrib['version'])
 		except:
 			raise MyException("The script file does not contain a version")
 
-		# if the version of FortiMonitor is lower than the version request by the XML file
+		# if the version of FortiDebug is lower than the version request by the XML file
 		# we cannot continue
 		if self.version < version:
-			print >>sys.stderr, "Version of FortiMonitor application is %i, but the XML script requires at least %i" % (self.version, version)
-			print >>sys.stderr, "... please update the FortiMonitor to the latest version to run this script"
+			print >>sys.stderr, "Version of FortiDebug application is %i, but the XML script requires at least %i" % (self.version, version)
+			print >>sys.stderr, "... please update the FortiDebug to the latest version to run this script"
 			sys.exit(10)
 
 		if version > 1:

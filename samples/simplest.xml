@@ -1,4 +1,4 @@
-<fortimonitor_scriptfile version="1">
+<fortidebug_scriptfile version="1">
 	<cycles>
 		
 		<cycle name="test" desc="Very simple testing cycle.">
@@ -11,5 +11,5 @@
 		</cycle>
 
 	</cycles>
-</fortimonitor_scriptfile>
+</fortidebug_scriptfile>
 

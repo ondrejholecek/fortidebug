@@ -1,5 +1,5 @@
 @ECHO OFF
-@ECHO Preparing environment to initialize the FortiMonitor application
+@ECHO Preparing environment to initialize the FortiDebug application
 
 @REM Save current execution policy
 powershell -Command Get-ExecutionPolicy -Scope CurrentUser >temp.txt

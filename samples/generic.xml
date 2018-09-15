@@ -1,11 +1,11 @@
 <!-- 
-	FortiMonitor "script.py" XML input script.
+	FortiDebug "script.py" XML input script.
 
 	This script contain the generic troubleshooting commands. There are many sections
 	and each of them have the relevant commands.
 -->
 
-<fortimonitor_scriptfile version="1">
+<fortidebug_scriptfile version="1">
 	<profiles>
 		<profile name="main">
 			<intercommand_sleep>0.5</intercommand_sleep>
@@ -205,4 +205,4 @@
 
 
 	</cycles>
-</fortimonitor_scriptfile>
+</fortidebug_scriptfile>

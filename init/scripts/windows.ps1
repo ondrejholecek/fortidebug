@@ -1,6 +1,6 @@
 $skip_python_install       = $FALSE
 $skip_libs_install         = $FALSE
-$skip_fortimonitor_install = $FALSE
+$skip_fortidebug_install = $FALSE
 $skip_shortcuts            = $FALSE
 
 $python_version = "2.7.15"
@@ -11,18 +11,18 @@ if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
     $python_arch    = ""
 }
 
-$fortimonitor_url = "https://github.com/ondrejholecek/fortimonitor/archive/master.zip"
+$fortidebug_url = "https://github.com/ondrejholecek/fortidebug/archive/master.zip"
 
 $pdir = (Split-Path -Path (Get-Location).Path -Parent)
 
 if (Test-Path -Path "$pdir\lib\SSHCommands.py") {
-    echo "- Seems we are initiating from FortiMonitor directory, disabling FortiMonitor installation"
-    $skip_fortimonitor_install = $TRUE
-    $fortimonitor_dir = $pdir
+    echo "- Seems we are initiating from FortiDebug directory, disabling FortiDebug installation"
+    $skip_fortidebug_install = $TRUE
+    $fortidebug_dir = $pdir
 } else {
-    echo "- Seems we are initiating from standalone setup file, installing FortiMonitor from URL"
-    $skip_fortimonitor_install = $FALSE
-    $fortimonitor_dir = "C:\FortiMonitor"
+    echo "- Seems we are initiating from standalone setup file, installing FortiDebug from URL"
+    $skip_fortidebug_install = $FALSE
+    $fortidebug_dir = "C:\FortiDebug"
 }
 
 if ( ($skip_python_install -ne $TRUE) -And (Test-Path -Path $python_dir) ) {
@@ -51,37 +51,37 @@ if ($skip_libs_install -ne $TRUE) {
     echo "- Skipping Python libraries installation"
 }
 
-if ($skip_fortimonitor_install -ne $TRUE) {
-    $fortimonitor_zip = [System.IO.Path]::GetTempFileName() | Rename-Item -NewName { $_ -replace 'tmp$', 'zip' } -PassThru
-    echo "- Downloading FortiMonitor application from $fortimonitor_url to $fortimonitor_zip"
+if ($skip_fortidebug_install -ne $TRUE) {
+    $fortidebug_zip = [System.IO.Path]::GetTempFileName() | Rename-Item -NewName { $_ -replace 'tmp$', 'zip' } -PassThru
+    echo "- Downloading FortiDebug application from $fortidebug_url to $fortidebug_zip"
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest -Uri $fortimonitor_url -OutFile $fortimonitor_zip
+    Invoke-WebRequest -Uri $fortidebug_url -OutFile $fortidebug_zip
 
-    echo "- Extracting FortiMonitor application to $fortimonitor_dir"
-    rm -r $fortimonitor_dir -Force -ErrorAction Ignore
+    echo "- Extracting FortiDebug application to $fortidebug_dir"
+    rm -r $fortidebug_dir -Force -ErrorAction Ignore
     Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($fortimonitor_zip, $fortimonitor_dir)
-    $fortimonitor_dir = "$fortimonitor_dir\fortimonitor-master"
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($fortidebug_zip, $fortidebug_dir)
+    $fortidebug_dir = "$fortidebug_dir\fortidebug-master"
 
-    echo "- Delete downloaded zip file $fortimonitor_zip"
-    del $fortimonitor_zip
+    echo "- Delete downloaded zip file $fortidebug_zip"
+    del $fortidebug_zip
 } else {
-    echo "- Skipping FortiMonitor installation"
+    echo "- Skipping FortiDebug installation"
 }
 
 if ($skip_shortcuts -ne $TRUE) {
     echo "- Creating Desktop shortcuts"
     $sh = New-Object -ComObject ("WScript.Shell")
     
-    $scat = $sh.CreateShortcut($env:USERPROFILE + "\Desktop\FortiMonitor ScriptGUI.lnk")
-    $scat.TargetPath = "$fortimonitor_dir\auxi\scriptgui.py"
-    $scat.WorkingDirectory = "$fortimonitor_dir\auxi"
+    $scat = $sh.CreateShortcut($env:USERPROFILE + "\Desktop\FortiDebug ScriptGUI.lnk")
+    $scat.TargetPath = "$fortidebug_dir\auxi\scriptgui.py"
+    $scat.WorkingDirectory = "$fortidebug_dir\auxi"
     $scat.Save()
 
-    $scat = $sh.CreateShortcut($env:USERPROFILE + "\Desktop\FortiMonitor Utilities.lnk")
+    $scat = $sh.CreateShortcut($env:USERPROFILE + "\Desktop\FortiDebug Utilities.lnk")
     $scat.TargetPath = "cmd.exe"
-    $scat.WorkingDirectory = "$fortimonitor_dir\utilities"
+    $scat.WorkingDirectory = "$fortidebug_dir\utilities"
     $scat.Save()
 
 } else {
