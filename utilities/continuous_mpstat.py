@@ -55,7 +55,7 @@ def result(data, info):
 	info['last_time'] = current
 
 def finished(info):
-	return False
+	return None
 
 def do(sshc, cycle_time):
 	info = { 'info': { 'last_time': ParserCurrentTime(sshc).get() } }
