@@ -13,7 +13,7 @@ def rss():
 # ^^^
 
 class SSHCommands:
-	def __init__(self, hostname, username, password, port, ignore_ssh_key=False, ic_sleep=0.01):
+	def __init__(self, hostname, username, password, port, ignore_ssh_key=False, ic_sleep=0.01, show_debug_outputs=False):
 		self.ssh_hostname = hostname
 		self.ssh_username = username
 		self.ssh_password = password
@@ -51,7 +51,7 @@ class SSHCommands:
 
 		self.connect()
 		self.basics()
-		self.open_channel()
+		self.open_channel(show_debug_outputs)
 	
 	def get_info(self):
 		return self.info
@@ -75,7 +75,7 @@ class SSHCommands:
 
 		self.client.connect(self.ssh_hostname, username=self.ssh_username, password=self.ssh_password, port=self.ssh_port)
 	
-	def open_channel(self):
+	def open_channel(self, show_debug_outputs):
 		self.channel = self.client.invoke_shell(width=300, height=9999999)
 		if self.info['vdoms_enabled']:
 			self.channel.send("config global\n")
@@ -85,13 +85,14 @@ class SSHCommands:
 		self.channel.send("diagnose debug console retry-log-msg enable\n")
 		self.read_until_prompt()
 
-		# reset debugging and enable debug outputs
-		self.channel.send("diagnose debug reset\n")
-		self.read_until_prompt()
-		self.channel.send("diagnose debug duration 0\n")
-		self.read_until_prompt()
-		self.channel.send("diagnose debug enable\n")
-		self.read_until_prompt()
+		if show_debug_outputs:
+			# reset debugging and enable debug outputs
+			self.channel.send("diagnose debug reset\n")
+			self.read_until_prompt()
+			self.channel.send("diagnose debug duration 0\n")
+			self.read_until_prompt()
+			self.channel.send("diagnose debug enable\n")
+			self.read_until_prompt()
 
 	def basics(self):
 		tmp = self.basic_exec("get system status")
