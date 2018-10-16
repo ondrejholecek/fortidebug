@@ -2,6 +2,7 @@ from EasyParser import EasyParser
 
 import re
 import time
+import sys
 
 class ParserProcessCPU(EasyParser):
 	def prepare(self):
@@ -62,11 +63,14 @@ class ParserProcessCPU(EasyParser):
 			# http://man7.org/linux/man-pages/man5/proc.5.html
 			values = ('', g.group(1), g.group(2), g.group(3)) + tuple(g.group(4).split())
 
-			p_pid    = int(values[1])
-			p_user   = int(values[14])
-			p_system = int(values[15])
-			p_cpu    = int(values[39])
-			results['processes'][p_pid] = { 'name': values[2], 'user': p_user, 'system': p_system, 'last_cpu': p_cpu, 'last_state': values[3] }
+			try:
+				p_pid    = int(values[1])
+				p_user   = int(values[14])
+				p_system = int(values[15])
+				p_cpu    = int(values[39])
+				results['processes'][p_pid] = { 'name': values[2], 'user': p_user, 'system': p_system, 'last_cpu': p_cpu, 'last_state': values[3] }
+			except IndexError:
+				print >>sys.stderr, "Error in collected outputs - cannot parse process info, isn't somebody else also debugging?"
 
 		return results
 	
