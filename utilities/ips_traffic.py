@@ -34,6 +34,7 @@ sshc, args = ssh([
 	{ 'name':'--ip-sessions-per-second',  'default':False, 'action':'store_true',  'help':'Show IP sessions per second' },
 	{ 'name':'--all-sessions-per-second',  'default':False, 'action':'store_true',  'help':'Show all sessions per second' },
 	{ 'name':'--all-counters',  'default':False, 'action':'store_true',  'help':'Show all known counters' },
+	{ 'name':'--only-total',  'default':False, 'action':'store_true',  'help':'Do not show per IPSE counters' },
 ], """
 This utility continuously parses the output of "diag ips session stat" and displays various IPS session statistics.
 
@@ -79,45 +80,45 @@ def do(sshc, info):
 
 
 	if info['cycles'] == 0 or (info['repeat_header'] > 0 and (info['cycles'] % info['repeat_header'] == 0)): 
-		show_header(ipss, etime)
+		show_header(ipss, etime, only_total=info['only_total'])
 
 	if info['show']['sessions_in_use']:
-		show_numbers(ipss, etime, 'ses_in_use', lambda x: x['sessions']['total']['inuse'])
+		show_numbers(ipss, etime, 'ses_in_use', lambda x: x['sessions']['total']['inuse'], only_total=info['only_total'])
 	if info['show']['recent_pps']:
-		show_numbers(ipss, etime, 'rec_packps', lambda x: x['pps'])
+		show_numbers(ipss, etime, 'rec_packps', lambda x: x['pps'], only_total=info['only_total'])
 	if info['show']['recent_bps']:
-		show_numbers(ipss, etime, 'rec_bitps', lambda x: x['bps'], human=True)
+		show_numbers(ipss, etime, 'rec_bitps', lambda x: x['bps'], human=True, only_total=info['only_total'])
 	if info['show']['tcp_sessions_in_use']:
-		show_numbers(ipss, etime, 'tcp_in_use', lambda x: x['sessions']['tcp']['inuse'])
+		show_numbers(ipss, etime, 'tcp_in_use', lambda x: x['sessions']['tcp']['inuse'], only_total=info['only_total'])
 	if info['show']['udp_sessions_in_use']:
-		show_numbers(ipss, etime, 'udp_in_use', lambda x: x['sessions']['udp']['inuse'])
+		show_numbers(ipss, etime, 'udp_in_use', lambda x: x['sessions']['udp']['inuse'], only_total=info['only_total'])
 	if info['show']['icmp_sessions_in_use']:
-		show_numbers(ipss, etime, 'icmp_in_use', lambda x: x['sessions']['icmp']['inuse'])
+		show_numbers(ipss, etime, 'icmp_in_use', lambda x: x['sessions']['icmp']['inuse'], only_total=info['only_total'])
 	if info['show']['ip_sessions_in_use']:
-		show_numbers(ipss, etime, 'ip_in_use', lambda x: x['sessions']['ip']['inuse'])
+		show_numbers(ipss, etime, 'ip_in_use', lambda x: x['sessions']['ip']['inuse'], only_total=info['only_total'])
 	if info['show']['tcp_sessions_active']:
-		show_numbers(ipss, etime, 'tcp_active', lambda x: x['sessions']['tcp']['active'])
+		show_numbers(ipss, etime, 'tcp_active', lambda x: x['sessions']['tcp']['active'], only_total=info['only_total'])
 	if info['show']['udp_sessions_active']:
-		show_numbers(ipss, etime, 'udp_active', lambda x: x['sessions']['udp']['active'])
+		show_numbers(ipss, etime, 'udp_active', lambda x: x['sessions']['udp']['active'], only_total=info['only_total'])
 	if info['show']['icmp_sessions_active']:
-		show_numbers(ipss, etime, 'icmp_active', lambda x: x['sessions']['icmp']['active'])
+		show_numbers(ipss, etime, 'icmp_active', lambda x: x['sessions']['icmp']['active'], only_total=info['only_total'])
 	if info['show']['ip_sessions_active']:
-		show_numbers(ipss, etime, 'ip_active', lambda x: x['sessions']['ip']['active'])
+		show_numbers(ipss, etime, 'ip_active', lambda x: x['sessions']['ip']['active'], only_total=info['only_total'])
 	if info['show']['tcp_sessions_per_second'] and info['previous'] != None:
 		tmp = diff_per_interval(ipss, info['previous'], lambda x: x['sessions']['tcp']['total'])
-		show_numbers(tmp, etime, 'tcp_s_p_sec', lambda x: x['result'])
+		show_numbers(tmp, etime, 'tcp_s_p_sec', lambda x: x['result'], only_total=info['only_total'])
 	if info['show']['udp_sessions_per_second'] and info['previous'] != None:
 		tmp = diff_per_interval(ipss, info['previous'], lambda x: x['sessions']['udp']['total'])
-		show_numbers(tmp, etime, 'udp_s_p_sec', lambda x: x['result'])
+		show_numbers(tmp, etime, 'udp_s_p_sec', lambda x: x['result'], only_total=info['only_total'])
 	if info['show']['icmp_sessions_per_second'] and info['previous'] != None:
 		tmp = diff_per_interval(ipss, info['previous'], lambda x: x['sessions']['icmp']['total'])
-		show_numbers(tmp, etime, 'icmp_s_p_sec', lambda x: x['result'])
+		show_numbers(tmp, etime, 'icmp_s_p_sec', lambda x: x['result'], only_total=info['only_total'])
 	if info['show']['ip_sessions_per_second'] and info['previous'] != None:
 		tmp = diff_per_interval(ipss, info['previous'], lambda x: x['sessions']['ip']['total'])
-		show_numbers(tmp, etime, 'ip_s_p_sec', lambda x: x['result'])
+		show_numbers(tmp, etime, 'ip_s_p_sec', lambda x: x['result'], only_total=info['only_total'])
 	if info['show']['all_sessions_per_second'] and info['previous'] != None:
 		tmp = diff_per_interval(ipss, info['previous'], lambda x: x['sessions']['calculated_total']['total'])
-		show_numbers(tmp, etime, 'all_s_p_sec', lambda x: x['result'])
+		show_numbers(tmp, etime, 'all_s_p_sec', lambda x: x['result'], only_total=info['only_total'])
 	
 	
 	info['cycles']   += 1
@@ -125,11 +126,14 @@ def do(sshc, info):
 
 	if info['empty_line']: print ""
 
-def show_header(data, etime):
+def show_header(data, etime, only_total=False):
 	line = "%-12s" % ("counter",)
-	for ipse in sorted(data.keys()):
-		col = "IPSE#%i" % (ipse,)
-		line += " %8s" % (col,)
+
+	if not only_total:
+		for ipse in sorted(data.keys()):
+			col = "IPSE#%i" % (ipse,)
+			line += " %8s" % (col,)
+
 	line += " %12s" % ("total",)
 	print prepend_timestamp(line, etime, "ips_traffic")
 
@@ -146,15 +150,17 @@ def diff_per_interval(cur, prev, value_fce):
 
 	return r
 		
-def show_numbers(data, etime, counter, value_fce, human=False):
+def show_numbers(data, etime, counter, value_fce, human=False, only_total=False):
 	line = "%-12s" % (counter,)
 	total = 0
+
 	for ipse in sorted(data.keys()):
 		value = value_fce(data[ipse])
-		if not human:
-			line += " %8i" % (value,)
-		else:
-			line += " %8s" % (get_human(value),)
+		if not only_total:
+			if not human:
+				line += " %8i" % (value,)
+			else:
+				line += " %8s" % (get_human(value),)
 		total += value
 
 	if not human:
@@ -188,6 +194,7 @@ if __name__ == '__main__':
 		'empty_line': False,
 		'previous' : None,
 		'engines'  : None,
+		'only_total': False,
 		'show' : {
 			'sessions_in_use'          : False,
 			'recent_pps'               : False,
@@ -210,6 +217,7 @@ if __name__ == '__main__':
 
 	info['repeat_header'] = args.repeat_header
 	info['empty_line']    = args.empty_line
+	info['only_total']    = args.only_total
 
 	if args.sessions_in_use:
 		info['show']['sessions_in_use'] = True
