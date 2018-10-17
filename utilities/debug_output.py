@@ -27,7 +27,7 @@ This utility is used to enable some debug outputs (usually with 'diagnose debug 
 
 The program automatically takes care of the SSH session timeout - by default it sends a space and backspace characters every 30 seconds. The string can be changed with `--keepalive-string` option and the timeout with `--keepalive-time` option. By default the program automatically removes the string from displayed outputs, but in case you use some general purpose string (such as '\\n') you may want to disable this feature with `--no-remove-string` option.
 
-By default all commands are executed in the global context in the order they appear on the command line. The context can be changed globally with `--vdom` or '--mgmt-vdom' parameters. Also the context can be specified for each command individually with '<...>' prefix (use vdom name for specific VDOM, 'global' for global context or keep it empty to use the current management VDOM).
+By default all commands are executed in the global context in the order they appear on the command line. The context can be changed globally with `--vdom` or `--mgmt-vdom` parameters. Also the context can be specified for each command individually with '<...>' prefix (use vdom name for specific VDOM, 'global' for global context or keep it empty to use the current management VDOM).
 
 By default the output is printed on standard output (if `--no-stdout` is not used). Additionally the same output can be appended to a file specified with `--outfile` parameter.
 """)
@@ -58,8 +58,9 @@ def continuous_read(sshc, keepalive_time, keepalive_string, outs, remove_string)
 	while True:
 		data = ""
 		while sshc.channel.recv_ready():
-			tmp = sshc.channel.recv(128)
-			if len(tmp) == 0: break
+			tmp = sshc.channel.recv(1024*1024)
+			if len(tmp) == 0: 
+				return
 			data += tmp
 
 		if remove_string:
@@ -69,6 +70,10 @@ def continuous_read(sshc, keepalive_time, keepalive_string, outs, remove_string)
 			for out in outs:
 				out.write(data)
 				out.flush()
+
+		if sshc.channel.closed:
+			print >>sys.stderr, "SSH session has been closed by remote side."
+			return
 
 		if (time.time() - last_ka) >= keepalive_time:
 			sshc.channel.send(keepalive_string)
