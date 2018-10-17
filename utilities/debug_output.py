@@ -14,13 +14,22 @@ import sys
 import time
 
 sshc, args = ssh([
-	{ 'name':'--command',      'required':True, 'action':'append', 'help':'What command to keep running, can repeat' },
-	{ 'name':'--vdom',         'default':None, 'help':'VDOM to use when executing the command' },
-	{ 'name':'--mgmt-vdom',    'default':False, 'action':'store_true',  'help':'Use management VDOM to execute the command' },
-	{ 'name':'--string',    'default':' \b', 'help':'String to send every --keepalive-time' },
+	{ 'name':'--command',          'required':True, 'action':'append', 'help':'What command to keep running, can repeat' },
+	{ 'name':'--vdom',             'default':None, 'help':'VDOM to use when executing the command' },
+	{ 'name':'--mgmt-vdom',        'default':False, 'action':'store_true',  'help':'Use management VDOM to execute the command' },
+	{ 'name':'--keepalive-string', 'default':' \b', 'help':'String to send every --keepalive-time' },
 	{ 'name':'--keepalive-time',   'type':int, 'default':30,  'help':'How often to send keepalive' },
-	{ 'name':'--outfile',    'default':None, 'help':'Save the output also to this file' },
+	{ 'name':'--outfile',          'default':None, 'help':'Save the output also to this file' },
+	{ 'name':'--no-stdout',        'default':False, 'action':'store_true',  'help':'Do not print data on standard output' },
+	{ 'name':'--no-remove-string', 'default':False, 'action':'store_true',  'help':'Disable automatic removal of the keepalive string form output' },
 ], """
+This utility is used to enable some debug outputs (usually with 'diagnose debug application ...' but other commands will work too) and capture the data appearing on the terminal. 
+
+The program automatically takes care of the SSH session timeout - by default it sends a space and backspace characters every 30 seconds. The string can be changed with `--keepalive-string` option and the timeout with `--keepalive-time` option. By default the program automatically removes the string from displayed outputs, but in case you use some general purpose string (such as '\\n') you may want to disable this feature with `--no-remove-string` option.
+
+By default all commands are executed in the global context in the order they appear on the command line. The context can be changed globally with `--vdom` or '--mgmt-vdom' parameters. Also the context can be specified for each command individually with '<...>' prefix (use vdom name for specific VDOM, 'global' for global context or keep it empty to use the current management VDOM).
+
+By default the output is printed on standard output (if `--no-stdout` is not used). Additionally the same output can be appended to a file specified with `--outfile` parameter.
 """)
 
 def start(sshc, commands, vdom, outs):
@@ -43,7 +52,7 @@ def start(sshc, commands, vdom, outs):
 				out.flush()
 	
 	
-def continuous_read(sshc, keepalive_time, keepalive_string, outs):
+def continuous_read(sshc, keepalive_time, keepalive_string, outs, remove_string):
 	last_ka = time.time()
 
 	while True:
@@ -52,6 +61,9 @@ def continuous_read(sshc, keepalive_time, keepalive_string, outs):
 			tmp = sshc.channel.recv(128)
 			if len(tmp) == 0: break
 			data += tmp
+
+		if remove_string:
+			data = data.replace(keepalive_string, '')
 
 		if len(data) > 0:
 			for out in outs:
@@ -78,15 +90,17 @@ if __name__ == '__main__':
 
 	#
 	outs = []
-	outs.append(sys.stdout)
+	if not args.no_stdout:
+		outs.append(sys.stdout)
 
 	if args.outfile != None:
 		f = open(args.outfile, "ab")
 		outs.append(f)
-
+	
+	#
 	try:
 		start(sshc, args.command, vdom, outs)
-		continuous_read(sshc, args.keepalive_time, args.string.decode('string_escape'), outs)
+		continuous_read(sshc, args.keepalive_time, args.keepalive_string.decode('string_escape'), outs, not args.no_remove_string)
 	except KeyboardInterrupt:
 		sshc.destroy()
 
