@@ -22,8 +22,11 @@ sshc, args = ssh([
 	{ 'name':'--outfile',          'default':None, 'help':'Save the output also to this file' },
 	{ 'name':'--no-stdout',        'default':False, 'action':'store_true',  'help':'Do not print data on standard output' },
 	{ 'name':'--no-remove-string', 'default':False, 'action':'store_true',  'help':'Disable automatic removal of the keepalive string form output' },
+	{ 'name':'--no-auto-commands', 'default':False, 'action':'store_true',  'help':'Do not send any commands that user didnt specify' },
 ], """
 This utility is used to enable some debug outputs (usually with 'diagnose debug application ...' but other commands will work too) and capture the data appearing on the terminal. 
+
+By default the user does not need to bother with debug enabling (`diagnose debug reset`, `diagnose debug duration 0`, `diagnose debug console timestamp enable`, `diagnose debug enable`) because the utility executes these commands automatically and in the right order. If you want to supress this automatization, use `--no-auto-commands` parameter).
 
 The program automatically takes care of the SSH session timeout - by default it sends a space and backspace characters every 30 seconds. The string can be changed with `--keepalive-string` option and the timeout with `--keepalive-time` option. By default the program automatically removes the string from displayed outputs, but in case you use some general purpose string (such as '\\n') you may want to disable this feature with `--no-remove-string` option.
 
@@ -103,8 +106,19 @@ if __name__ == '__main__':
 		outs.append(f)
 	
 	#
+	commands = []
+	if not args.no_auto_commands:
+		commands.append('<global>diagnose debug reset')
+		commands.append('<global>diagnose debug duration 0')
+		commands.append('<global>diagnose debug console timestamp enable')
+		commands += args.command[0:]
+		commands.append('<global>diagnose debug enable')
+	else:
+		commands = args.command[0:]
+	
+	#
 	try:
-		start(sshc, args.command, vdom, outs)
+		start(sshc, commands, vdom, outs)
 		continuous_read(sshc, args.keepalive_time, args.keepalive_string.decode('string_escape'), outs, not args.no_remove_string)
 	except KeyboardInterrupt:
 		sshc.destroy()
