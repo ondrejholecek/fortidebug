@@ -32,7 +32,7 @@ The program automatically takes care of the SSH session timeout - by default it 
 
 By default all commands are executed in the global context in the order they appear on the command line. The context can be changed globally with `--vdom` or `--mgmt-vdom` parameters. Also the context can be specified for each command individually with '<...>' prefix (use vdom name for specific VDOM, 'global' for global context or keep it empty to use the current management VDOM).
 
-By default the output is printed on standard output (if `--no-stdout` is not used). Additionally the same output can be appended to a file specified with `--outfile` parameter.
+By default the output is printed on standard output (if `--no-stdout` is not used). Additionally the same output can be appended to a file specified with `--outfile` parameter. If you want to overwrite the output file instead of appending at the end, use `!` as the first character.
 """)
 
 def start(sshc, commands, vdom, outs):
@@ -102,7 +102,14 @@ if __name__ == '__main__':
 		outs.append(sys.stdout)
 
 	if args.outfile != None:
-		f = open(args.outfile, "ab")
+		if args.outfile[0] == '!':
+			filename = args.outfile[1:]
+			mode     = "wb"
+		else:
+			filename = args.outfile
+			mode     = "ab"
+
+		f = open(filename, mode)
 		outs.append(f)
 	
 	#
