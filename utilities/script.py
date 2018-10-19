@@ -93,6 +93,8 @@ class Script:
 		self.version_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "VERSION.txt")
 		self.version = int(open(self.version_file).read())
 
+		self.result_number = 0
+
 		self.load()
 
 	def destroy(self):
@@ -742,10 +744,13 @@ class Script:
 		self.save_result("internal:dump_params", None, params, self.last_command_time, params, {'type':'dump_params'})
 
 	def do_echo(self, cmd, profile, params):
-		v = ">>> %s" % (self.element_get_command(cmd, profile, params),)
-		print prepend_timestamp(v, self.last_command_time, 'script')
+		v = "%s" % (self.element_get_command(cmd, profile, params),)
+		print prepend_timestamp(v, self.last_command_time, 'script:ech')
 
 	def save_result(self, command, vdom, output, etime, params, cinfo):
+		if not (cinfo['type'] == 'continuous' and cinfo['continuous_index'] > 0):
+			self.result_number += 1
+
 		rp = {}
 		for p in params.keys():
 			if p[0] != '>': continue
@@ -762,6 +767,7 @@ class Script:
 				'connected_on'     : int(info['connected_on']),
 				'nonce'            : info['nonce'],
 				'info'             : cinfo,
+				'index'            : self.result_number,
 			}
 
 			if self.output_buffer_length == 0:
@@ -779,8 +785,8 @@ class Script:
 			no_stdout = False
 
 		if not self.quiet and not no_stdout:
-			print prepend_timestamp("<<< %s" % (command,), etime, 'script')
-			print prepend_timestamp(str(output), etime, 'script')
+			print prepend_timestamp("%s" % (command,), etime, "script:cmd")
+			print prepend_timestamp(str(output), etime, "script:out")
 			
 	# separate function to be able to call it also when the program is terminating
 	def save_result_compress(self):	
