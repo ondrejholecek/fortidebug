@@ -8,7 +8,6 @@ import argparse
 
 unix_epoch_start  = pytz.UTC.localize(datetime.datetime(1970, 1, 1, 0, 0, 0))
 
-# [2018-10-17 16:10:05+02:00]
 class ConvertTime:
 	FORMATS = {
 		'human-with-offset': {
@@ -120,10 +119,25 @@ parser.add_argument('--input',  default=None, type=str, help='Input file name (s
 parser.add_argument('--output', default=None, type=str, help='Output file name (stdout if not specified)')
 parser.add_argument('--tz-input', default='UTC', type=str, help='Timezone expected on input (if not specified otherwise), default "UTC"')
 parser.add_argument('--tz-output', default='UTC', type=str, help='Timezone expected on output, default "UTC"')
+parser.add_argument('--timezones', default=False, action='store_true', help='List common timezones')
 parser.add_argument('--format-input', default=None, choices=['human-with-offset', 'human', 'timestamp', 'iso'], help='Input time format, try to guess if not specified')
 parser.add_argument('--format-output', default='human-with-offset', choices=['human-with-offset', 'human', 'timestamp', 'iso'], help='Output time format, "human-with-offset" by default')
 parser.add_argument('--borders', default='', type=str, help='Two characters that will border the output time')
 args = parser.parse_args()
+
+if args.timezones:
+	print "Common timezones:"
+	for tz in pytz.common_timezones:
+		print "- %s" % (tz,)
+	sys.exit(0)
+
+# timezones
+try:
+	input_tz  = pytz.timezone(args.tz_input)
+	output_tz = pytz.timezone(args.tz_output)
+except pytz.exceptions.UnknownTimeZoneError, e:
+	print >>sys.stderr, "Timezone %s is unknown. Use --timezones to list the common timezones." % (str(e),)
+	sys.exit(1)
 
 # input & output parameters
 if args.input == None:
@@ -136,15 +150,6 @@ if args.output == None:
 else:
 	output_fd = open(args.output, "wb")
 
-# timezones
-try:
-	input_tz  = pytz.timezone(args.tz_input)
-	output_tz = pytz.timezone(args.tz_output)
-except pytz.exceptions.UnknownTimeZoneError, e:
-	print >>sys.stderr, "Timezone %s is unknown. List of common timezones is following:" % (str(e),)
-	for tz in pytz.common_timezones:
-		print >>sys.stderr, "- %s" % (tz,)
-	sys.exit(1)
 
 #
 ct = ConvertTime(input_fd, output_fd, args.format_input, args.format_output, { 
