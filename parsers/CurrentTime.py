@@ -40,7 +40,7 @@ class OurDatetime():
 			return str(self.dt.replace(tzinfo=None))
 
 		elif self.time_format == 'timestamp':
-			return str(self.as_timestamp)
+			return str(self.as_timestamp())
 
 		elif self.time_format == 'iso':
 			return self.dt.isoformat()
