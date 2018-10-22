@@ -117,7 +117,7 @@ class ConvertTime:
 parser = argparse.ArgumentParser(description='Time conversion')
 parser.add_argument('--input',  default=None, type=str, help='Input file name (stdin if not specified)')
 parser.add_argument('--output', default=None, type=str, help='Output file name (stdout if not specified)')
-parser.add_argument('--tz-input', default='UTC', type=str, help='Timezone expected on input (if not specified otherwise), default "UTC"')
+parser.add_argument('--tz-input', default='UTC', type=str, help='Timezone expected on input (if not specified otherwise, ie. for "human" format), default "UTC"')
 parser.add_argument('--tz-output', default='UTC', type=str, help='Timezone expected on output, default "UTC"')
 parser.add_argument('--timezones', default=False, action='store_true', help='List common timezones')
 parser.add_argument('--format-input', default=None, choices=['human-with-offset', 'human', 'timestamp', 'iso'], help='Input time format, try to guess if not specified')
