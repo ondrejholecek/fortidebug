@@ -187,10 +187,15 @@ try:
 except KeyboardInterrupt:
 	pass
 
-print >>sys.stderr, "Statistics:"
-print >>sys.stderr, "    Remote hostname         : %s" % (s.params['hostname'],)
-print >>sys.stderr, "    Remote serial number    : %s" % (s.params['sn'],)
-print >>sys.stderr, "    Number of cycles        : %i" % (s.last_cycle,)
-print >>sys.stderr, "    Number of commands      : %i" % (s.commands,)
-print >>sys.stderr, "    First command output at : %s" % (s.first_output_at,)
-print >>sys.stderr, "    Last command output at  : %s" % (s.last_output_at,)
+try:
+	line = ""
+	line += "Statistics:\n"
+	line += "    Remote hostname         : %s\n" % (s.params['hostname'],)
+	line += "    Remote serial number    : %s\n" % (s.params['sn'],)
+	line += "    Number of cycles        : %i\n" % (s.last_cycle,)
+	line += "    Number of commands      : %i\n" % (s.commands,)
+	line += "    First command output at : %s\n" % (s.first_output_at,)
+	line += "    Last command output at  : %s\n" % (s.last_output_at,)
+	sys.stderr.write(line)
+except (IndexError, ValueError, TypeError):
+	pass
