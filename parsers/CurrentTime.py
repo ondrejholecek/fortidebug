@@ -40,13 +40,19 @@ class OurDatetime():
 			return str(self.dt.replace(tzinfo=None))
 
 		elif self.time_format == 'timestamp':
-			return str( int((self.dt - datetime.datetime(1970, 1, 1, 0, 0, 0, 0, TZoffset(0, "utc"))).total_seconds()) )
+			return str(self.as_timestamp)
 
 		elif self.time_format == 'iso':
 			return self.dt.isoformat()
 
 		else:
 			return "UnknownFormat"
+
+	def as_timestamp(self):
+		return int((self.dt - datetime.datetime(1970, 1, 1, 0, 0, 0, 0, TZoffset(0, "utc"))).total_seconds())
+	
+	def get_offset(self):
+		return int(self.dt.tzinfo.utcoffset(self.dt).total_seconds()/60)	
 
 	def replace(self, year=None, month=None, day=None, hour=None, minute=None, second=None, microsecond=None, tzinfo=None):
 		if year == None: n_year = self.dt.year

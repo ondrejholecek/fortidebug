@@ -93,6 +93,7 @@ class Script:
 		self.version_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "VERSION.txt")
 		self.version = int(open(self.version_file).read())
 
+		self.cycle_number  = 0
 		self.result_number = 0
 
 		self.load()
@@ -272,6 +273,7 @@ class Script:
 				if c == None:
 					raise MyException("Cannot find cycle '%s'" % (sc,))
 	
+				self.cycle_number += 1
 				self.do_cycle(c)
 
 		else:
@@ -301,6 +303,7 @@ class Script:
 			'flags': {
 				'time_format'      : etime.time_format,
 				'time_source'      : etime.time_source,
+				'time_offset'      : etime.get_offset(),
 				'filename'         : self.filename,
 				'real_filename'    : self.real_filename,
 				'version'          : self.version,
@@ -762,12 +765,13 @@ class Script:
 				'command'          : command,
 				'context'          : vdom,
 				'output'           : output,
-				'time'             : str(etime),
+				'timestamp'        : etime.as_timestamp(),
 				'parameters'       : rp,
 				'connected_on'     : int(info['connected_on']),
 				'nonce'            : info['nonce'],
 				'info'             : cinfo,
 				'index'            : self.result_number,
+				'cycle'            : self.cycle_number,
 			}
 
 			if self.output_buffer_length == 0:
