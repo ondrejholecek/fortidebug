@@ -12,6 +12,8 @@ If you are interested in automatic command execution based on (predefined or cus
 
 For the comprehensive list of the all the utilities and their description, please see [utilities wiki page](https://github.com/ondrejholecek/fortidebug/wiki/Utilities).
 
+There are also some [auxiliary programs](https://github.com/ondrejholecek/fortidebug/wiki/Auxiliary) that can help with different format and timestamps conversions or with signing custom URL scripts for [script.py utility](https://github.com/ondrejholecek/fortidebug/wiki/utilities-script.py).
+
 ## Supported client systems
 
 At this moment all the utilities should work correctly on:
