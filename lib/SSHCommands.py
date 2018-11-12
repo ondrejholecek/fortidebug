@@ -97,6 +97,11 @@ class SSHCommands:
 	def basics(self):
 		tmp = self.basic_exec("get system status")
 
+		# some special cases
+		if 'Reached maximum number of logged in administrators.' in tmp:
+			raise Exception("Reached maximum number of logged in administrators. Log in manually and clear them.")
+
+		#
 		g = self.re_status_version.search(tmp)
 		if not g: 
 			raise Exception("Cannot find version in 'get system status' output")
