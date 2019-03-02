@@ -38,6 +38,8 @@ class GenericModel:
 def GetModelSpec(serial):
 	if serial[:6] == 'FG1K5D':
 		model = __import__('models.1500D', fromlist=['Model']).Model()
+	elif serial[:6] == 'FG1K2D':
+		model = __import__('models.1200D', fromlist=['Model']).Model()
 	elif serial[:6] == 'FG5H0E':
 		model = __import__('models.500E', fromlist=['Model']).Model()
 	else:
