@@ -180,16 +180,25 @@ class SSHCommands:
 		time.sleep(self.intercommand_sleep)
 		return out.strip("\n")
 	
-	def continuous_exec(self, command, divide_callback, result_callback, exit_callback, args={}, vdom=None):
+	def continuous_exec(self, command, divide_callback, result_callback, exit_callback, args={}, vdom=None, simulate=None):
 		if vdom != None and self.info['vdoms_enabled']:
 			if len(vdom) == 0: vdom = self.info['mgmt_vdom']
-			self.send_command("sudo %s %s" % (vdom, command,))
+			if not simulate: self.send_command("sudo %s %s" % (vdom, command,))
 		else:
-			self.send_command(command)
+			if not simulate: self.send_command(command)
 
 		data = ""
 		while True:
-			data += self.channel.recv(1024)
+			if not simulate:
+				data += self.channel.recv(1024)
+			else:
+				tmp = simulate.read(1024)
+				if len(tmp) == 0:
+					args['info']['no_new_data'] = True
+				else:
+					args['info']['no_new_data'] = False
+				data += tmp
+
 			r = divide_callback(data, **args)
 
 			# simple None means there is no full results available in the output
@@ -206,6 +215,10 @@ class SSHCommands:
 			# should we finish?
 			ex = exit_callback(**args)
 			if ex != None:
-				self.channel.send(ex)
-				self.read_until_prompt()
+				if not simulate:
+					self.channel.send(ex)
+					self.read_until_prompt()
+				else:
+					pass
+
 				break
