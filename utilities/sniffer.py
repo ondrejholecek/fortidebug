@@ -16,6 +16,8 @@ import sys
 sshc, args = ssh([
 	{ 'name':'--filter',  'default':'',  'help':'Tcpdump filter, default ""' },
 	{ 'name':'--interface',  'default':'any',  'help':'Interface name, default "any"' },
+	{ 'name':'--direction',  'default':'both', 'choices':['in','out','both'], 'help':'Which direction to save, default "both"' },
+	{ 'name':'--simulate',  'help':'File name to simulate the SSH output' },
 ], """
 Run the sniffer of FortiGate and dump packets in libpcap (old) format on standard input.
 
@@ -33,7 +35,8 @@ $ wireshark -k -i <(./sniffer.py  --host 10.109.250.102 --port 10003 --filter 'p
 # 0x0050	 0003                                   	..
 # 
 
-re_packet = re.compile('^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}).(\d{6}) (\S+) (\S+) (\S+) -> (\S+):.*?[\r\n]+(.*?)\r\n\r\n', re.M | re.DOTALL)
+
+re_packet = re.compile('^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}).(\d{6}) (\S+) (\S+) (\S+) -> (\S+):.*?[\r\n]+(.*?)\r?\n\r?\n', re.M | re.DOTALL)
 unix_epoch_start  = pytz.UTC.localize(datetime.datetime(1970, 1, 1, 0, 0, 0))
 
 def divide(data, info):
@@ -69,11 +72,15 @@ def result(data, info):
 		hstr += pktl.split("\t")[1].replace(' ', '')
 	bpkt = hstr.decode('hex')
 
+	if info['save_direction'] == 'in' and direction != 'in': return
+	if info['save_direction'] == 'out' and direction != 'out': return
+
 	# save packet
 	pcap_packet(bpkt, us)
 
 
 def finished(info):
+	if 'no_new_data' in info and info['no_new_data'] == True: return ''
 	return None
 
 def pcap_packet(pkt, us):
@@ -102,9 +109,16 @@ def pcap_header():
 	sys.stdout.flush()
 
 def do(sshc, interface, filter_string):
+	if args.simulate:
+		simulated_file = open(args.simulate, 'rb')
+	else:
+		simulated_file = None
+
 	pcap_header()
-	info = { 'info': {}}
-	sshc.continuous_exec("diagnose sniffer packet %s '%s' 6 0 a" % (interface, filter_string,), divide, result, finished, info)
+	info = { 'info': {
+		'save_direction': args.direction,
+	}}
+	sshc.continuous_exec("diagnose sniffer packet %s '%s' 6 0 a" % (interface, filter_string,), divide, result, finished, info, simulate=simulated_file)
 
 if __name__ == '__main__':
 	try:
