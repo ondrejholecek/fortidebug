@@ -16,6 +16,7 @@ import sys
 sshc, args = ssh([
 	{ 'name':'--collect-time',   'type':int, 'default':5,  'help':'How long should each cycle take' },
 	{ 'name':'--max',   'type':int, 'default':45,  'help':'Maximum lines to show (45 by default)' },
+	{ 'name':'--show-zeros',  'default':False, 'action':'store_true',  'help':'Include lines with zero runs' },
 	{ 'name':'--summarize', 'default':False, 'action':'store_true',  'help':'Summarize ticks from all CPUs' },
 	{ 'name':'--cpu', 'type':int, 'default':[], 'action':'append',  'help':'Summarize ticks from selected CPUs' },
 	{ 'name':'--no-soft', 'default':False, 'action':'store_true',  'help':'Do not show softirqs' },
@@ -67,7 +68,7 @@ def sort_interrupts(diff, cpus='each', ignore_zero=True):
 		ret.append(s)
 	return ret
 
-def do(sshc, cache, max_lines, display_type, hz, soft, hard):
+def do(sshc, cache, max_lines, display_type, hz, soft, hard, show_zeros):
 	etime = ParserCurrentTime(sshc).get()
 	ints  = ParserInterrupts(sshc).get(soft=soft, hard=hard)
 	usage = ParserProcessCPU(sshc).get([])
@@ -86,7 +87,7 @@ def do(sshc, cache, max_lines, display_type, hz, soft, hard):
 		overall_cpus[tmp] = int(round(((usage['global'][tmp] - cache['last']['cpu']['global'][tmp])*100)/(time_difference*hz)))
 
 	diff = difference_per_second(cache['last']['interrupts'], ints, time_difference)
-	diff_sorted_keys = sort_interrupts(diff, display_type)
+	diff_sorted_keys = sort_interrupts(diff, display_type, not show_zeros)
 	if max_lines != 0: diff_sorted_keys = diff_sorted_keys[:max_lines]
 
 	total_ticks_soft = sum([diff[x]['total'] for x in diff.keys() if diff[x]['source'] == 'soft'])
@@ -159,6 +160,7 @@ if __name__ == '__main__':
 			'hz': args.hz,
 			'soft': soft,
 			'hard': hard,
+			'show_zeros': args.show_zeros,
 		}, args.collect_time, cycles_left=[args.max_cycles], debug=args.debug)
 	except KeyboardInterrupt:
 		sshc.destroy()
