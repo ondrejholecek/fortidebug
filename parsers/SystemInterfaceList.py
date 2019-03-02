@@ -19,12 +19,14 @@ class ParserSystemInterfaceList(EasyParser):
 
 			if types != None and int(tmp['type']) not in types: continue
 
-			ifaces[tmp['if']] = {
-				'type'   : int(tmp['type']),
-				'index'  : int(tmp['index']),
-				'mtu'    : int(tmp['mtu']),
-				'state'  : tmp['state'].split(' '),
-				'flags'  : tmp['flags'].split(' '),
-			}
+			try:
+				ifaces[tmp['if']] = {
+					'type'   : int(tmp['type']),
+					'index'  : int(tmp['index']),
+					'mtu'    : int(tmp['mtu']),
+					'state'  : tmp['state'].split(' '),
+					'flags'  : tmp['flags'].split(' '),
+				}
+			except: continue
 		
 		return ifaces
