@@ -46,7 +46,7 @@ if ($skip_python_install -ne $TRUE) {
 
 if ($skip_libs_install -ne $TRUE) {
     echo "- Installing the Python libraries we need"
-    Invoke-Expression -Command "$python_dir\Scripts\pip.exe -q install paramiko requests"
+    Invoke-Expression -Command "$python_dir\Scripts\pip.exe -q install paramiko requests pytz"
 } else {
     echo "- Skipping Python libraries installation"
 }
