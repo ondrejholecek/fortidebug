@@ -14,6 +14,8 @@ For the comprehensive list of the all the utilities and their description, pleas
 
 There are also some [auxiliary programs](https://github.com/ondrejholecek/fortidebug/wiki/Auxiliary) that can help with different format and timestamps conversions or with signing custom URL scripts for [script.py utility](https://github.com/ondrejholecek/fortidebug/wiki/utilities-script.py).
 
+Besides that you can also find some useful [standalone programs](https://github.com/ondrejholecek/fortidebug/wiki/Standalone) that can be downloaded and used independently. Those programs usually do not use the SSH framework and can be implemented in any different way.
+
 ## Supported client systems
 
 At this moment all the utilities should work correctly on:
