@@ -108,6 +108,8 @@ def do(sshc, cache, max_lines, display_type, hz, soft, hard, show_zeros):
 	if soft and hard: filters_applied += "TYPE[soft,hard] "
 	elif soft: filters_applied += "TYPE[soft] "
 	elif hard: filters_applied += "TYPE[hard] "
+	if show_zeros: filters_applied += "ZERO[yes] "
+	else: filters_applied += "ZERO[no] "
 
 	print prepend_timestamp("Overall CPU utilization: %3.1f %% user, %3.1f %% system, %3.1f %% idle" % (
 		overall_cpus['user'], overall_cpus['system'], overall_cpus['idle'],
