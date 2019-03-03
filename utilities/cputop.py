@@ -22,6 +22,11 @@ sshc, args = ssh([
 	{ 'name':'--process-name', 'default':None, 'help': 'Regular expression on the process name' },
 	{ 'name':'--cpu',          'type':int, 'default':None, 'action':'append', 'help':'CPU number to show processes on (can repeat)' },
 	{ 'name':'--state',        'type':str, 'default':None, 'action':'append', 'help':'Process state to show (can repeat)' },
+	{ 'name':'--pid',          'type':int, 'default':None, 'action':'append', 'help':'Show only processed with this PID' },
+	{ 'name':'--ppid',         'type':int, 'default':None, 'action':'append', 'help':'Show only processed with this parent' },
+	{ 'name':'--negate-pid',   'default':False, 'action':'store_true', 'help':'Parameters --pid and --ppid are negated' },
+	{ 'name':'--system',       'default':False, 'action':'store_true', 'help':'Show only kernel threads (alias to PPID 2)' },
+	{ 'name':'--userland',     'default':False, 'action':'store_true', 'help':'Show only userland processes (negate to PPID 0 and 2)' },
 	{ 'name':'--hz',           'type':int, 'default':100,  'help':'CONFIG_HZ of device, do not change' },
 ], """
 This is very similar to FortiGate's "diag sys top" program, with following differencies:
@@ -38,7 +43,7 @@ It is possible to only shown the processes in the specific state (see help for `
 or processes running on a specific CPU (see help for `--cpu` option).
 """)
 
-def do(sshc, pid_group_count, collect_time, max_lines, sort_by, process_name, cpus, states, hz):
+def do(sshc, pid_group_count, collect_time, max_lines, sort_by, process_name, cpus, states, hz, ppid, tpid, negate):
 	# filter only desired process (or all if process == None)
 	if process_name != None: process_re = re.compile(process_name)
 	else: process_re = None
@@ -85,9 +90,17 @@ def do(sshc, pid_group_count, collect_time, max_lines, sort_by, process_name, cp
 					if states != None and diff_processes[pid]['last_state'] not in states: 
 						continue
 
+					show = False
+					if (tpid == None and ppid == None): show = True
+					elif (ppid != None and diff_processes[pid]['parent'] in ppid): show = True
+					elif (tpid != None and pid in tpid): show = True
+					if (not negate) and (not show): continue
+					elif (negate) and (show): continue
+
 					util[pid] = {}
 					util[pid]['name']       = diff_processes[pid]['name']
 					util[pid]['pid']        = pid
+					util[pid]['parent']     = diff_processes[pid]['parent']
 					util[pid]['last_cpu']   = diff_processes[pid]['last_cpu']
 					util[pid]['last_state'] = diff_processes[pid]['last_state']
 
@@ -139,10 +152,10 @@ def print_formatted(util, overall_cpus, top, last_time, sortby, filters_applied)
 		overall_cpus['iowait'], overall_cpus['irq'], overall_cpus['softirq'],
 	), last_time, 'pcpu')
 	print prepend_timestamp(filters_applied, last_time, 'pcpu')
-	print prepend_timestamp("                                 OF CONSUMED      GLOBAL    ", last_time, 'pcpu')
-	print prepend_timestamp("   PID NAME             STATE   USER  SYSTEM    USER  SYSTEM  CPU#", last_time, 'pcpu')
+	print prepend_timestamp("                                        OF CONSUMED      GLOBAL    ", last_time, 'pcpu')
+	print prepend_timestamp("   PID   PPID NAME             STATE   USER  SYSTEM    USER  SYSTEM  CPU#", last_time, 'pcpu')
 	for pid in sorted(util.keys(), key=lambda x: util[x][sortby], reverse=True):
-		line = "%6i %-20s %s  " % (pid, util[pid]['name'], util[pid]['last_state'],)
+		line = "%6i %6i %-20s %s  " % (pid, util[pid]['parent'], util[pid]['name'], util[pid]['last_state'],)
 
 		part = "%3.1f" % (util[pid]['user'],)
 		if len(part) < 5: part = "%s%s" % (" "*(5-len(part)), part,)
@@ -170,8 +183,18 @@ def print_formatted(util, overall_cpus, top, last_time, sortby, filters_applied)
 	sys.stdout.flush()
 
 if __name__ == '__main__':
+	if args.system: 
+		ppid = [2]
+		negate = False
+	elif args.userland: 
+		ppid = [0,2]
+		negate = True
+	else: 
+		ppid = args.ppid
+		negate = args.negate_pid
+
 	try:
-		do(sshc, args.pid_group, args.collect_time, args.max, args.sort_by, args.process_name, args.cpu, args.state, args.hz)
+		do(sshc, args.pid_group, args.collect_time, args.max, args.sort_by, args.process_name, args.cpu, args.state, args.hz, ppid, args.pid, negate)
 	except KeyboardInterrupt:
 		sshc.destroy()
 

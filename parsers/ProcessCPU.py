@@ -65,10 +65,11 @@ class ParserProcessCPU(EasyParser):
 
 			try:
 				p_pid    = int(values[1])
+				p_ppid   = int(values[4])
 				p_user   = int(values[14])
 				p_system = int(values[15])
 				p_cpu    = int(values[39])
-				results['processes'][p_pid] = { 'name': values[2], 'user': p_user, 'system': p_system, 'last_cpu': p_cpu, 'last_state': values[3] }
+				results['processes'][p_pid] = { 'name': values[2], 'user': p_user, 'system': p_system, 'last_cpu': p_cpu, 'last_state': values[3], 'parent': p_ppid }
 			except IndexError:
 				print >>sys.stderr, "Error in collected outputs - cannot parse process info, isn't somebody else also debugging?"
 
@@ -94,6 +95,7 @@ class ParserProcessCPU(EasyParser):
 
 			processes[pid] = {
 				'name'       : current_results['processes'][pid]['name'],
+				'parent'     : current_results['processes'][pid]['parent'],
 				'last_cpu'   : current_results['processes'][pid]['last_cpu'],
 				'last_state' : current_results['processes'][pid]['last_state'],
 				'user'       : current_results['processes'][pid]['user'] - old_results['processes'][pid]['user'],
