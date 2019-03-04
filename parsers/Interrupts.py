@@ -157,8 +157,14 @@ class ParserInterrupts(EasyParser):
 					desc = 'High priority tasklet'
 				elif iline[0] == 'TASKLET':
 					desc = 'Normal priority tasklet'
-				elif iline[0] in ('TIMER', 'SCHED', 'RCU', 'HRTIMER'):
-					desc = 'Kernel housekeeping'
+				elif iline[0] == 'TIMER':
+					desc = 'Normal timer'
+				elif iline[0] == 'HRTIMER':
+					desc = 'High-resolution timer'
+				elif iline[0] == 'RCU':
+					desc = 'RCU locking'
+				elif iline[0] == 'SCHED':
+					desc = 'Scheduler'
 				elif iline[0] in ('BLOCK', 'BLOCK_IOPOLL'):
 					desc = 'Block device (disk)'
 				else:
