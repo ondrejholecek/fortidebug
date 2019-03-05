@@ -57,7 +57,7 @@ class ParserIPSecGW(EasyParser):
 			# ('8f079bf8715bde6c', '2ed52dc066893ee8', 'initiator', 'established')
 			g = self.re_main.search(section)
 			if not g:
-				print "Debug: unable to parse main section"
+#				print "Debug: unable to parse main section"
 				continue
 
 			t = {}
