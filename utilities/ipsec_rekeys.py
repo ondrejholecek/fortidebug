@@ -18,11 +18,12 @@ sshc, args = ssh([
 	{ 'name':'--age',  'type':str, 'default':None, 'action':'append', 'choices':['current','total'], 'help':'Show current or total numbers (can repeat)' },
 	{ 'name':'--use',  'type':str, 'default':None, 'action':'append', 'choices':['created','established'], 'help':'Show numbers of created or established SAs (can repeat)' },
 	{ 'name':'--no-colors',  'default':False, 'action':'store_true', 'help':'Do not print color codes' },
+	{ 'name':'--repeat-header', 'type':int, 'default':20,  'help':'How often to repeat header line (20 lines by default), 0 to disable' },
 ])
 
 all_counters = ('IKE_SA_created_current', 'IKE_SA_established_current', 'IKE_SA_created_all', 'IKE_SA_established_all', 'IPSEC_SA_created_current', 'IPSEC_SA_established_current', 'IPSEC_SA_created_all', 'IPSEC_SA_established_all')
 
-def do(sshc, known, status, direction, phase, age, use, colors):
+def do(sshc, known, status, direction, phase, age, use, colors, repeat_header):
 	if os.name == 'nt': colors = False
 
 	etime = ParserCurrentTime(sshc).get()
@@ -89,7 +90,10 @@ def do(sshc, known, status, direction, phase, age, use, colors):
 					elif diff[t] > 0: line += '\33[0;32;40m'
 					elif diff[t] < 0: line += '\33[0;31;40m'
 
-				line += " %10i" % (diff[t],)
+				if diff[t] == 0: 
+					line += " %10i" % (0,)
+				else:
+					line += " %+10i" % (diff[t],)
 
 				if colors: line += '\33[0m'
 
@@ -118,41 +122,49 @@ def do(sshc, known, status, direction, phase, age, use, colors):
 		# save ...
 		known[(gw['vdom'], gw['name'])] = this
 
-	# do not show the first round
+	# prepare header
+	if known['header'] == None:
+		header = ''
+		if colors: header += '\033[1m'
+
+		header += "%-16s %-20s %-10s %-12s" % ('vdom', 'name', 'direction', 'status',)
+		for t in counter_names:
+			if   t == 'IKE_SA_created_all'          : header += " %10s" % ('P1:CreAll',)
+			elif t == 'IKE_SA_established_all'      : header += " %10s" % ('P1:EstAll',)
+			elif t == 'IKE_SA_created_current'      : header += " %10s" % ('P1:CreCur',)
+			elif t == 'IKE_SA_established_current'  : header += " %10s" % ('P1:EstCur',)
+			elif t == 'IPSEC_SA_created_all'        : header += " %10s" % ('P2:CreAll',)
+			elif t == 'IPSEC_SA_established_all'    : header += " %10s" % ('P2:EstAll',)
+			elif t == 'IPSEC_SA_created_current'    : header += " %10s" % ('P2:CreCur',)
+			elif t == 'IPSEC_SA_established_current': header += " %10s" % ('P2:EstCur',)
+
+		header += " %7s" % ('repeat%',)
+		if colors: header += '\033[0m'
+		known['header'] = header
+
+	# do not show the first round but show header
 	known['iters'] += 1
 	if known['iters'] == 1:
 		known['appeared'] = {}
+		print prepend_timestamp(known['header'], etime, 'ipsec_rekeys')
 		return
 
-	# print header
-	if len(to_print) > 0:
-		line = ''
-		if colors: line += '\033[1m'
-
-		line += "%-16s %-20s %-10s %-12s" % ('vdom', 'name', 'direction', 'status',)
-		for t in counter_names:
-			if   t == 'IKE_SA_created_all'          : line += " %10s" % ('P1:CreAll',)
-			elif t == 'IKE_SA_established_all'      : line += " %10s" % ('P1:EstAll',)
-			elif t == 'IKE_SA_created_current'      : line += " %10s" % ('P1:CreCur',)
-			elif t == 'IKE_SA_established_current'  : line += " %10s" % ('P1:EstCur',)
-			elif t == 'IPSEC_SA_created_all'        : line += " %10s" % ('P2:CreAll',)
-			elif t == 'IPSEC_SA_established_all'    : line += " %10s" % ('P2:EstAll',)
-			elif t == 'IPSEC_SA_created_current'    : line += " %10s" % ('P2:CreCur',)
-			elif t == 'IPSEC_SA_established_current': line += " %10s" % ('P2:EstCur',)
-
-		line += " %7s" % ('repeat%',)
-
-		if colors: line += '\033[0m'
-		print prepend_timestamp(line, etime, 'ipsec_rekeys')
 
 	# print data 
 	for p in to_print:
+		if repeat_header != 0 and known['printed'] != 0 and known['printed'] % repeat_header == 0:
+			print prepend_timestamp(known['header'], etime, 'ipsec_rekeys')
+
 		print p
+		known['printed'] += 1
+
 	
 if __name__ == '__main__':
 	try:
 		known = { 
 			'iters': 0,
+			'printed': 0,
+			'header': None,
 			'appeared': {},
 		}
 
@@ -165,6 +177,7 @@ if __name__ == '__main__':
 			'age': args.age,
 			'use': args.use,
 			'colors': not args.no_colors,
+			'repeat_header': args.repeat_header,
 		}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
 	except KeyboardInterrupt:
 		sshc.destroy()
