@@ -13,7 +13,7 @@ def rss():
 # ^^^
 
 class SSHCommands:
-	def __init__(self, hostname, username, password, port, ignore_ssh_key=False, ic_sleep=0.01, show_debug_outputs=False):
+	def __init__(self, hostname, username, password, port, ignore_ssh_key=False, ic_sleep=0.01, show_debug_outputs=False, hostname_extension=None):
 		self.ssh_hostname = hostname
 		self.ssh_username = username
 		self.ssh_password = password
@@ -45,6 +45,7 @@ class SSHCommands:
 		}
 		self.info['connected_on']  = time.time()
 		self.info['nonce']         = random.randint(1000000, 9999999)
+		self.info['hostname_extension'] = hostname_extension
 	
 		self.client  = None
 		self.channel = None
@@ -143,10 +144,14 @@ class SSHCommands:
 		else:
 			raise Exception("Cannot find out whether VDOMs are enabled in 'get system status' output")
 			
+		hostname = self.info['hostname']
+		if self.info['hostname_extension'] != None:
+			hostname += self.info['hostname_extension']
+
 		if self.info['vdoms_enabled']:
-			self.info['prompt'] = "%s (global) %s " % (self.info['hostname'], self.info['prompt_character'],)
+			self.info['prompt'] = "%s (global) %s " % (hostname, self.info['prompt_character'],)
 		else:
-			self.info['prompt'] = "%s %s " % (self.info['hostname'], self.info['prompt_character'],)
+			self.info['prompt'] = "%s %s " % (hostname, self.info['prompt_character'],)
 
 	def basic_exec(self, command):
 		stdin, stdout, stderr = self.client.exec_command(command)
