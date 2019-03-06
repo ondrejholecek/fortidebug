@@ -4,6 +4,7 @@ import paramiko
 import time
 import re
 import random
+import socket
 
 # DEBUG vvv
 def rss():
@@ -159,11 +160,19 @@ class SSHCommands:
 
 	def read_until_prompt(self):
 		data = ""
+		original_timeout = self.channel.gettimeout()
+		self.channel.settimeout(5)
+
 		while True:
-			data += self.channel.recv(1024)
+			try:
+				data += self.channel.recv(1024)
+			except socket.timeout:
+				raise Exception("Cannot read the prompt. Maybe you want to use --hostname-extension parameter")
+
 			if data[-len(self.info['prompt']):] == self.info['prompt']:
 				break
 
+		self.channel.settimeout(original_timeout)
 		return data[:-len(self.info['prompt'])]
 	
 	def send_command(self, command):
