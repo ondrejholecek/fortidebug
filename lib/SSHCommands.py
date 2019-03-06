@@ -28,6 +28,7 @@ class SSHCommands:
 		self.re_status_version  = re.compile('(\S)\s+Version:\s+(.*?)\s+v(\d+)\.(\d+)\.(\d+),build(\d+),(\d+)') # does not start with ^ because the is prompt
 		                                                                                                        # and we also use it to get the prompt char.
 		self.re_status_serial   = re.compile('^Serial-Number:\s*(.*)$', re.M)
+		self.re_status_module_serial = re.compile('^Module Serial-Number:\s*(.*)$', re.M)
 
 		self.local_params = {}
 		self.info = {}
@@ -116,11 +117,14 @@ class SSHCommands:
 			self.info['version']['build'] = int(g.group(6))
 			self.info['version']['compilation'] = int(g.group(7))
 
-		g = self.re_status_serial.search(tmp)
-		if not g: 
-			raise Exception("Cannot find serial number in 'get system status' output")
+		g1 = self.re_status_module_serial.search(tmp)
+		g2 = self.re_status_serial.search(tmp)
+		if g1:
+			self.info['serial'] = g1.group(1)
+		elif g2:
+			self.info['serial'] = g2.group(1)
 		else:
-			self.info['serial'] = g.group(1)
+			raise Exception("Cannot find serial number in 'get system status' output")
 
 		g = self.re_status_hostname.search(tmp)
 		if not g: 
