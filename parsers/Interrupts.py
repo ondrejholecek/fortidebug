@@ -82,7 +82,7 @@ import time
 
 class ParserInterrupts(EasyParser):
 	def prepare(self):
-		self.re_cpus      = re.compile("^\s+CPU.*(\d+)\s+\n")
+		self.re_cpus      = re.compile("^\s+CPU.*?(\d+)\s+\n")
 
 	def get(self, soft=True, hard=True):
 		interrupts   = {}
