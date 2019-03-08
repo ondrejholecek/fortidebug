@@ -23,7 +23,7 @@ class ParserPacketDistribution(EasyParser):
 		self.re_big_dist    = re.compile("^ > (\d+) bytes: (\d+) packets", re.M)
 
 	def get(self):
-		dists = self.sshc.clever_exec("diagnose firewall packet distribution")
+		dists = self.sshc.clever_exec("diagnose firewall packet distribution", vdom='')
 		collected_on = time.time()
 
 		result = {}
