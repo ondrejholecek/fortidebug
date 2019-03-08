@@ -19,10 +19,11 @@ sshc, args = ssh([
 	{ 'name':'--history',   'type':int, 'default':45,  'help':'Maximum lines to show (45 by default)' },
 	{ 'name':'--hz',    'type':int, 'default':100,  'help':'CONFIG_HZ of device, do not change' },
 	{ 'name':'--raw',   'default':False, 'action':'store_true',  'help':'Show raw difference (not divided by interval)' },
+	{ 'name':'--no-cpu',   'default':False, 'action':'store_true',  'help':'Do not show CPU usage on each line' },
 ], """
 """)
 
-def do(sshc, cache, history, hz, raw):
+def do(sshc, cache, history, hz, raw, show_cpu):
 	etime = ParserCurrentTime(sshc).get()
 	frags = ParserFragmentation(sshc).get()
 	usage = ParserProcessCPU(sshc).get([])
@@ -75,6 +76,7 @@ def do(sshc, cache, history, hz, raw):
 	print prepend_timestamp(filters_applied, etime, 'fragtop')
 
 	hdr = " %7s | %11s | %11s | %11s | %11s | %11s | %11s | %11s |" % ("history", "R:fragments", "R:packets", "R:timeout", "R:error", "S:fragments", "S:packets", "S:unable",)
+	if show_cpu: hdr += " %8s | %8s | %8s |" % ("system%", "irq%", "softirq%",)
 	print prepend_timestamp(hdr, etime, 'fragtop')
 
 	# current line
@@ -82,6 +84,7 @@ def do(sshc, cache, history, hz, raw):
 	for k in ('ReasmReqds', 'ReasmOKs', 'ReasmTimeout', 'ReasmFails', 'FragCreates', 'FragOKs', 'FragFails'):
 		current_line += "| %11i " % (pdiff[k],)
 	current_line += "|"
+	if show_cpu: current_line += " %8i | %8i | %8i |" % (overall_cpus['system'], overall_cpus['irq'], overall_cpus['softirq'],)
 	print prepend_timestamp(current_line, etime, 'fragtop')
 
 	# older lines
@@ -90,9 +93,10 @@ def do(sshc, cache, history, hz, raw):
 		for k in ('ReasmReqds', 'ReasmOKs', 'ReasmTimeout', 'ReasmFails', 'FragCreates', 'FragOKs', 'FragFails'):
 			old_line += "| %11i " % (odata[1][k],)
 		old_line += "|"
+		if show_cpu: old_line += " %8i | %8i | %8i |" % (odata[2], odata[3], odata[4],)
 		print prepend_timestamp(old_line, etime, 'fragtop')
 		
-	cache['history'].insert(0, (frags['collected_on'], pdiff) )
+	cache['history'].insert(0, (frags['collected_on'], pdiff, overall_cpus['system'], overall_cpus['irq'], overall_cpus['softirq'],) )
 	if len(cache['history']) > history: cache['history'] = cache['history'][:history]
 	cache['last']['frags'] = frags
 	cache['last']['cpu'] = usage
@@ -107,6 +111,7 @@ if __name__ == '__main__':
 			'history': args.history,
 			'hz': args.hz,
 			'raw': args.raw,
+			'show_cpu': not args.no_cpu,
 		}, args.collect_time, cycles_left=[args.max_cycles], debug=args.debug)
 	except KeyboardInterrupt:
 		sshc.destroy()
