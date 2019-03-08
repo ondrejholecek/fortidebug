@@ -78,13 +78,13 @@ def do(sshc, cache, history, hz, raw, show_cpu):
 	prehdr = "         |     Received fragments reassembly counters    |  Outgoing fragmentation counters  |"
 	if show_cpu: prehdr += "   Historical CPU percentage    |"
 	print prepend_timestamp(prehdr, etime, 'fragtop')
-	hdr = " %7s | %9s | %9s | %9s | %9s | %9s | %9s | %9s |" % ("history", "fragments", "packets", "timeout", "error", "fragments", "packets", "unable",)
+	hdr = " %7s | %9s | %9s | %9s | %9s | %9s | %9s | %9s |" % ("history", "fragments", "packets", "timeout", "error", "packets", "fragments", "unable",)
 	if show_cpu: hdr += " %8s | %8s | %8s |" % ("system%", "irq%", "softirq%",)
 	print prepend_timestamp(hdr, etime, 'fragtop')
 
 	# current line
 	current_line = " %7i " % ( int(round(time.time()-frags['collected_on'])),)
-	for k in ('ReasmReqds', 'ReasmOKs', 'ReasmTimeout', 'ReasmFails', 'FragCreates', 'FragOKs', 'FragFails'):
+	for k in ('ReasmReqds', 'ReasmOKs', 'ReasmTimeout', 'ReasmFails', 'FragOKs', 'FragCreates', 'FragFails'):
 		current_line += "| %9i " % (pdiff[k],)
 	current_line += "|"
 	if show_cpu: current_line += " %8i | %8i | %8i |" % (overall_cpus['system'], overall_cpus['irq'], overall_cpus['softirq'],)
@@ -93,7 +93,7 @@ def do(sshc, cache, history, hz, raw, show_cpu):
 	# older lines
 	for odata in cache['history']:
 		old_line = " %7i " % ( -int(round(time.time()-odata[0])),)
-		for k in ('ReasmReqds', 'ReasmOKs', 'ReasmTimeout', 'ReasmFails', 'FragCreates', 'FragOKs', 'FragFails'):
+		for k in ('ReasmReqds', 'ReasmOKs', 'ReasmTimeout', 'ReasmFails', 'FragOKs', 'FragCreates', 'FragFails'):
 			old_line += "| %9i " % (odata[1][k],)
 		old_line += "|"
 		if show_cpu: old_line += " %8i | %8i | %8i |" % (odata[2], odata[3], odata[4],)
