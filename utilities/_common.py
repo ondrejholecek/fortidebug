@@ -27,6 +27,7 @@ def ssh(args=(), manual=''):
 	parser.add_argument('--ignore-ssh-key', default=False, action="store_true", help='Ignore SSH server key problems')
 	parser.add_argument('--max-cycles', default=None, type=int, help='Maximum cycles to run')
 	parser.add_argument('--hostname-extension', default=None, type=str, help='Extend the hostname for purposes of matching command prompt (chassis)')
+	parser.add_argument('--prompt-character', default=None, type=str, help='Override the prompt character ("#" or "$") (chassis)')
 	
 	# add local arguments
 	local = parser.add_argument_group('local parameters')
@@ -49,7 +50,7 @@ def ssh(args=(), manual=''):
 	elif args.askpass:
 		args.password = getpass.getpass("Password for %s@%s: " % (args.user, args.host,))
 	
-	sshc = SSHCommands(args.host, args.user, args.password, args.port, args.ignore_ssh_key, hostname_extension=args.hostname_extension)
+	sshc = SSHCommands(args.host, args.user, args.password, args.port, args.ignore_ssh_key, hostname_extension=args.hostname_extension, prompt_character=args.prompt_character)
 
 	# do not return global arguments values (they are still saved in SSHCommands object though)
 	# exception is the "debug" parameter which we do not delete

@@ -14,13 +14,14 @@ def rss():
 # ^^^
 
 class SSHCommands:
-	def __init__(self, hostname, username, password, port, ignore_ssh_key=False, ic_sleep=0.01, show_debug_outputs=False, hostname_extension=None):
+	def __init__(self, hostname, username, password, port, ignore_ssh_key=False, ic_sleep=0.01, show_debug_outputs=False, hostname_extension=None, prompt_character=None):
 		self.ssh_hostname = hostname
 		self.ssh_username = username
 		self.ssh_password = password
 		self.ssh_port     = port
 		self.ssh_ignore_key = ignore_ssh_key
 		self.intercommand_sleep = ic_sleep
+		self.prompt_character   = prompt_character
 
 		self.re_status_hostname = re.compile("^Hostname:\s*(.*)$", re.M)
 		self.re_status_vdoms    = re.compile("^Virtual domain configuration:\s*(.*)$", re.M)
@@ -109,7 +110,11 @@ class SSHCommands:
 		if not g: 
 			raise Exception("Cannot find version in 'get system status' output")
 		else:
-			self.info['prompt_character'] = g.group(1)
+			if self.prompt_character == None:
+				self.info['prompt_character'] = g.group(1)
+			else:
+				self.info['prompt_character'] = self.prompt_character
+
 			self.info['device'] = g.group(2)
 			self.info['version']['major'] = int(g.group(3))
 			self.info['version']['minor'] = int(g.group(4))
