@@ -82,7 +82,6 @@ def do(sshc, cache, pid_group_count, max_lines, sort_by, process_name, cpus, sta
 		util = {}
 		for i in range(len(previous)):
 			diff_overall, diff_processes, diff_time = ParserProcessCPU(sshc).diff(previous[i], current[i])
-			print diff_time
 			for pid in diff_processes.keys():
 				if cpus != None and diff_processes[pid]['last_cpu'] not in cpus: 
 					continue

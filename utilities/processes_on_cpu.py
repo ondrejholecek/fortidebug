@@ -14,7 +14,7 @@ from _common import ssh, cycle
 
 sshc, args = ssh([
 	{ 'name':'--cycle-time', 'type':int, 'default':5,  'help':'How long should each cycle take' },
-	{ 'name':'--pid-group',  'type':int, 'default':10, 'help':'How many PIDs to query at once' },
+	{ 'name':'--pid-group',  'type':int, 'default':50, 'help':'How many PIDs to query at once' },
 ], """
 This program displays the processes running on each CPU (core). 
 

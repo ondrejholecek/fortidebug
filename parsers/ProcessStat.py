@@ -13,13 +13,13 @@ class ParserProcessStat(EasyParser):
 	def get(self, pids):
 		if type(pids) == int: pids = [pids]
 
-		files = ""
+		files = "/proc/stat"
 		for pid in pids:
 			files += " /proc/%i/stat" % (pid,)
 
 		results = []
 
-		pss = self.sshc.clever_exec("fnsysctl cat%s" % (files,))
+		pss = self.sshc.clever_exec("fnsysctl cat %s" % (files,))
 		for ps in pss.split("\n"):
 			if "No such file or directory" in ps: continue
 			ps = ps.strip()
