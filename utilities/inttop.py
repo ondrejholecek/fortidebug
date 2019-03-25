@@ -14,7 +14,7 @@ import re
 import sys
 
 sshc, args = ssh([
-	{ 'name':'--collect-time',   'type':int, 'default':5,  'help':'How long should each cycle take' },
+	{ 'name':'--collect-time',   'type':float, 'default':5,  'help':'How long should each cycle take' },
 	{ 'name':'--max',   'type':int, 'default':45,  'help':'Maximum lines to show (45 by default)' },
 	{ 'name':'--show-zeros',  'default':False, 'action':'store_true',  'help':'Include lines with zero runs' },
 	{ 'name':'--summarize', 'default':False, 'action':'store_true',  'help':'Summarize ticks from all CPUs' },
@@ -23,7 +23,7 @@ sshc, args = ssh([
 	{ 'name':'--no-hard', 'default':False, 'action':'store_true',  'help':'Do not show hardirqs' },
 	{ 'name':'--hz',           'type':int, 'default':100,  'help':'CONFIG_HZ of device, do not change' },
 ], """
-""")
+""", supports_script=True)
 
 def difference_per_second(old, new, time_difference):
 	if 'interrupts' not in old or 'interrupts' not in new: raise Exception('Invalid structures for calculating difference')
@@ -69,9 +69,9 @@ def sort_interrupts(diff, cpus='each', ignore_zero=True):
 	return ret
 
 def do(sshc, cache, max_lines, display_type, hz, soft, hard, show_zeros):
-	etime = ParserCurrentTime(sshc).get()
 	ints  = ParserInterrupts(sshc).get(soft=soft, hard=hard)
 	usage = ParserProcessCPU(sshc).get([])
+	etime = ParserCurrentTime(sshc).get()
 	
 	if 'last' not in cache:
 		cache['last'] = {
@@ -141,6 +141,7 @@ def do(sshc, cache, max_lines, display_type, hz, soft, hard, show_zeros):
 		'cpu': usage,
 	}
 	sys.stdout.flush()
+	return etime
 
 if __name__ == '__main__':
 	itype = 'each'
@@ -163,7 +164,7 @@ if __name__ == '__main__':
 			'soft': soft,
 			'hard': hard,
 			'show_zeros': args.show_zeros,
-		}, args.collect_time, cycles_left=[args.max_cycles], debug=args.debug)
+		}, args.collect_time, cycles_left=[args.max_cycles], debug=args.debug, interactive=args.interactive)
 	except KeyboardInterrupt:
 		sshc.destroy()
 

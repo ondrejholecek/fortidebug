@@ -24,7 +24,7 @@ class ParserPacketDistribution(EasyParser):
 
 	def get(self):
 		dists = self.sshc.clever_exec("diagnose firewall packet distribution", vdom='')
-		collected_on = time.time()
+#		collected_on = time.time()
 
 		result = {}
 		for dist in self.re_std_dist.findall(dists):
@@ -38,7 +38,7 @@ class ParserPacketDistribution(EasyParser):
 			result[ (left, None) ] = int(dist[1])
 
 		return {
-			'collected_on': collected_on,
+#			'collected_on': collected_on,
 			'packets': result,
 		}
 

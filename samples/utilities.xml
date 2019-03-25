@@ -1,0 +1,43 @@
+<!-- 
+	FortiDebug "script.py" XML input script.
+
+	This one collects the necessary debugs to be able to ron "inttop.py" utility later.
+-->
+
+<fortidebug_scriptfile version="1">
+	<profiles>
+		<profile name="main">
+			<intercommand_sleep>0.5</intercommand_sleep>
+		</profile>
+	</profiles>
+
+	<plists>
+		<parameters name="main">
+		</parameters>
+	</plists>
+
+	<cycles>
+		<cycle name="inttop" desc="Data for utility inttop.py" profile="main" parameters="main">
+			<echo>inttop.py debug commands.</echo>
+
+			<simple context="global"    >diagnose hardware sysinfo interrupts    </simple>
+			<simple context="global"    >fnsysctl cat /proc/softirqs             </simple>
+			<simple context="global"    >fnsysctl cat /proc/stat                 </simple>
+		</cycle>
+
+		<cycle name="fragtop" desc="Data for utility fragtop.py" profile="main" parameters="main">
+			<echo>fragtop.py debug commands.</echo>
+
+			<simple context="mgmt_vdom" >diagnose snmp ip frags                  </simple>
+			<simple context="global"    >fnsysctl cat /proc/stat                 </simple>
+		</cycle>
+
+		<cycle name="pkttop" desc="Data for utility pkttop.py" profile="main" parameters="main">
+			<echo>pkttop.py debug commands.</echo>
+
+			<simple context="mgmt_vdom" >diagnose firewall packet distribution   </simple>
+			<simple context="global"    >fnsysctl cat /proc/stat                 </simple>
+		</cycle>
+
+	</cycles>
+</fortidebug_scriptfile>

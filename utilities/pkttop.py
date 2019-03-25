@@ -21,21 +21,22 @@ sshc, args = ssh([
 	{ 'name':'--raw',   'default':False, 'action':'store_true',  'help':'Show raw difference (not divided by interval)' },
 	{ 'name':'--percentage',   'default':False, 'action':'store_true',  'help':'Show percentage for each type instead of real number' },
 ], """
-""")
+""", supports_script=True)
 
 def do(sshc, cache, history, hz, raw, percentage):
-	etime = ParserCurrentTime(sshc).get()
 	packets = ParserPacketDistribution(sshc).get()
 	usage = ParserProcessCPU(sshc).get([])
+	etime = ParserCurrentTime(sshc).get()
 	
 	if 'last' not in cache:
 		cache['last'] = {
+			'collected_on': etime.as_timestamp(),
 			'packets': packets,
 			'cpu' : usage,
 		}
 		return
 
-	time_difference = packets['collected_on'] - cache['last']['packets']['collected_on']
+	time_difference = etime.as_timestamp() - cache['last']['collected_on']
 
 	overall_cpus = {}
 	for tmp in ['user', 'system', 'idle', 'iowait', 'irq', 'softirq']:
@@ -102,7 +103,7 @@ def do(sshc, cache, history, hz, raw, percentage):
 	print prepend_timestamp(hdr, etime, 'pkttop')
 
 	# current line
-	current_line = " %7i " % ( int(round(time.time()-packets['collected_on'])),)
+	current_line = " %7i " % ( 0, )
 	for k in skeys:
 		current_line += "| %12i " % (pdiff[k],)
 	current_line += "| %12i |" % ( total, )
@@ -110,18 +111,21 @@ def do(sshc, cache, history, hz, raw, percentage):
 
 	# older lines
 	for odata in cache['history']:
-		old_line = " %7i " % ( -int(round(time.time()-odata[0])),)
+		old_line = " %7i " % ( -int(round(etime.as_timestamp()-odata[0])),)
 		for k in skeys:
 			old_line += "| %12i " % (odata[1][k],)
 		old_line += "| %12i |" % (odata[2],)
 		print prepend_timestamp(old_line, etime, 'pkttop')
 		
 
-	cache['history'].insert(0, (packets['collected_on'], pdiff, total) )
+	cache['history'].insert(0, (etime.as_timestamp(), pdiff, total) )
 	if len(cache['history']) > history: cache['history'] = cache['history'][:history]
 	cache['last']['packets'] = packets
 	cache['last']['cpu'] = usage
+	cache['last']['collected_on'] = etime.as_timestamp()
+
 	sys.stdout.flush()
+	return etime
 
 if __name__ == '__main__':
 	cache = {'history':[]}
@@ -133,7 +137,7 @@ if __name__ == '__main__':
 			'hz': args.hz,
 			'raw': args.raw,
 			'percentage': args.percentage,
-		}, args.collect_time, cycles_left=[args.max_cycles], debug=args.debug)
+		}, args.collect_time, cycles_left=[args.max_cycles], debug=args.debug, interactive=args.interactive)
 	except KeyboardInterrupt:
 		sshc.destroy()
 

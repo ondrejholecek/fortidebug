@@ -21,21 +21,22 @@ sshc, args = ssh([
 	{ 'name':'--raw',   'default':False, 'action':'store_true',  'help':'Show raw difference (not divided by interval)' },
 	{ 'name':'--no-cpu',   'default':False, 'action':'store_true',  'help':'Do not show CPU usage on each line' },
 ], """
-""")
+""", supports_script=True)
 
 def do(sshc, cache, history, hz, raw, show_cpu):
-	etime = ParserCurrentTime(sshc).get()
 	frags = ParserFragmentation(sshc).get()
 	usage = ParserProcessCPU(sshc).get([])
+	etime = ParserCurrentTime(sshc).get()
 	
 	if 'last' not in cache:
 		cache['last'] = {
+			'collected_on': etime.as_timestamp(),
 			'frags': frags,
 			'cpu' : usage,
 		}
 		return
 
-	time_difference = frags['collected_on'] - cache['last']['frags']['collected_on']
+	time_difference = etime.as_timestamp() - cache['last']['collected_on']
 
 	overall_cpus = {}
 	for tmp in ['user', 'system', 'idle', 'iowait', 'irq', 'softirq']:
@@ -83,7 +84,7 @@ def do(sshc, cache, history, hz, raw, show_cpu):
 	print prepend_timestamp(hdr, etime, 'fragtop')
 
 	# current line
-	current_line = " %7i " % ( int(round(time.time()-frags['collected_on'])),)
+	current_line = " %7i " % ( 0, )
 	for k in ('ReasmReqds', 'ReasmOKs', 'ReasmTimeout', 'ReasmFails', 'FragOKs', 'FragCreates', 'FragFails'):
 		current_line += "| %9i " % (pdiff[k],)
 	current_line += "|"
@@ -92,18 +93,21 @@ def do(sshc, cache, history, hz, raw, show_cpu):
 
 	# older lines
 	for odata in cache['history']:
-		old_line = " %7i " % ( -int(round(time.time()-odata[0])),)
+		old_line = " %7i " % ( -int(round(etime.as_timestamp()-odata[0])),)
 		for k in ('ReasmReqds', 'ReasmOKs', 'ReasmTimeout', 'ReasmFails', 'FragOKs', 'FragCreates', 'FragFails'):
 			old_line += "| %9i " % (odata[1][k],)
 		old_line += "|"
 		if show_cpu: old_line += " %8i | %8i | %8i |" % (odata[2], odata[3], odata[4],)
 		print prepend_timestamp(old_line, etime, 'fragtop')
 		
-	cache['history'].insert(0, (frags['collected_on'], pdiff, overall_cpus['system'], overall_cpus['irq'], overall_cpus['softirq'],) )
+	cache['history'].insert(0, (etime.as_timestamp(), pdiff, overall_cpus['system'], overall_cpus['irq'], overall_cpus['softirq'],) )
 	if len(cache['history']) > history: cache['history'] = cache['history'][:history]
 	cache['last']['frags'] = frags
 	cache['last']['cpu'] = usage
+	cache['last']['collected_on'] = etime.as_timestamp()
+
 	sys.stdout.flush()
+	return etime
 
 if __name__ == '__main__':
 	cache = {'history':[]}
@@ -115,7 +119,7 @@ if __name__ == '__main__':
 			'hz': args.hz,
 			'raw': args.raw,
 			'show_cpu': not args.no_cpu,
-		}, args.collect_time, cycles_left=[args.max_cycles], debug=args.debug)
+		}, args.collect_time, cycles_left=[args.max_cycles], debug=args.debug, interactive=args.interactive)
 	except KeyboardInterrupt:
 		sshc.destroy()
 

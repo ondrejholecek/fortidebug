@@ -1,10 +1,16 @@
-#!/usr/bin/env python2.7
-
 import paramiko
 import time
 import re
 import random
 import socket
+
+
+###
+### Class for executing commands on FortiGate and reading the outputs
+### in various ways.
+### Alternative to this one is ScriptCommands class which tries to simulate
+### this class but reads the outputs from script.py output file (JSONline).
+###
 
 # DEBUG vvv
 def rss():
@@ -31,7 +37,10 @@ class SSHCommands:
 		self.re_status_serial   = re.compile('^Serial-Number:\s*(.*)$', re.M)
 		self.re_status_module_serial = re.compile('^Module Serial-Number:\s*(.*)$', re.M)
 
-		self.local_params = {}
+		self.local_params = {
+			'time_offset_seconds': None,
+		}
+
 		self.info = {}
 		self.info['hostname']      = None
 		self.info['vdoms_enabled'] = None
@@ -39,6 +48,7 @@ class SSHCommands:
 		self.info['mgmt_vdom']     = None
 		self.info['device']        = None
 		self.info['serial']        = None
+		self.info['time_offset']   = None
 		self.info['version']       = {
 			'major': None,
 			'minor': None,
@@ -56,6 +66,9 @@ class SSHCommands:
 		self.connect()
 		self.basics()
 		self.open_channel(show_debug_outputs)
+
+	def is_live(self):
+		return True
 	
 	def get_info(self):
 		return self.info

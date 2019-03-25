@@ -21,7 +21,7 @@ class TZoffset(datetime.tzinfo):
 		return datetime.timedelta(seconds=int(round(float(self.offset)/60))*60)
 
 	def dst(self, dt):
-		return timedelta(0)
+		return datetime.timedelta(0)
 	
 	def tzname(self, dt):
 		return self.name
@@ -50,6 +50,9 @@ class OurDatetime():
 
 	def as_timestamp(self):
 		return int((self.dt - datetime.datetime(1970, 1, 1, 0, 0, 0, 0, TZoffset(0, "utc"))).total_seconds())
+	
+	def as_datetime(self):
+		return self.dt
 	
 	def get_offset(self):
 		return int(self.dt.tzinfo.utcoffset(self.dt).total_seconds()/60)	
@@ -128,15 +131,16 @@ class ParserCurrentTime(EasyParser):
 	def get(self):
 		time_format = self.get_local_param('args').time_format
 		time_source = self.get_local_param('args').time_source
+		time_offset = self.get_local_param('time_offset_seconds')
 
 		if time_source == 'device':
-			dt_with_offset = OurDatetime(self.get_from_device(), time_format, time_source)
+			dt_with_offset = OurDatetime(self.get_from_device(time_offset), time_format, time_source)
 		elif time_source == 'local':
-			dt_with_offset = OurDatetime(self.get_from_local(), time_format, time_source)
+			dt_with_offset = OurDatetime(self.get_from_local(time_offset), time_format, time_source)
 
 		return dt_with_offset
 
-	def get_from_device(self):
+	def get_from_device(self, time_offset=None):
 		o_date = self.sshc.clever_exec("exe date")
 		g = self.re_date.search(o_date)
 		if not g:
@@ -156,13 +160,24 @@ class ParserCurrentTime(EasyParser):
 		d_second = int(g.group(3))
 
 		dt = datetime.datetime(d_year, d_month, d_day, d_hour, d_minute, d_second)
-		now = datetime.datetime.utcnow().replace(microsecond=0)
-		dt_with_offset = dt.replace(tzinfo=TZoffset((dt-now).total_seconds(), 'device'))
 
-		return dt_with_offset
+		if time_offset == None:
+			now = datetime.datetime.utcnow().replace(microsecond=0)
+			dt_with_offset = dt.replace(tzinfo=TZoffset((dt-now).total_seconds(), 'device'))
+			return dt_with_offset
 
-	def get_from_local(self):
+		else:
+			dt_with_offset = dt.replace(tzinfo=TZoffset(time_offset, 'device'))
+			return dt_with_offset
+
+	def get_from_local(self, time_offset=None):
 		now     = datetime.datetime.now().replace(microsecond=0)
-		now_utc = datetime.datetime.utcnow().replace(microsecond=0)
-		dt_with_offset = now.replace(tzinfo=TZoffset((now-now_utc).total_seconds(), 'local'))
-		return dt_with_offset
+
+		if time_offset == None:
+			now_utc = datetime.datetime.utcnow().replace(microsecond=0)
+			dt_with_offset = now.replace(tzinfo=TZoffset((now-now_utc).total_seconds(), 'local'))
+			return dt_with_offset
+
+		else:
+			dt_with_offset = now.replace(tzinfo=TZoffset(time_offset, 'local'))
+			return dt_with_offset

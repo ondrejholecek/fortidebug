@@ -18,14 +18,14 @@ class ParserFragmentation(EasyParser):
 
 	def get(self):
 		frags = self.sshc.clever_exec("diagnose snmp ip frags", vdom='')
-		collected_on = time.time()
+#		collected_on = time.time()
 
 		result = {}
 		for fr in self.re_frag.findall(frags):
 			result[fr[0]] = int(fr[1])
 
 		return {
-			'collected_on': collected_on,
+#			'collected_on': collected_on,
 			'frags' : result,
 		}
 
