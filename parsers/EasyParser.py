@@ -14,6 +14,16 @@ class EasyParser:
 	def prepare(self):
 		pass
 	
+	def get2(self, *args, **kwargs):
+		if self.sshc.is_live():
+			return self.get(*args, **kwargs)
+		
+		class_name = str(self.__class__).split('.')[-1]
+		if not class_name.startswith("Parser"): raise Exception("Class name should start with \"Parser\"")
+		parser_name = class_name[6:]
+
+		return self.sshc.get_parsed(parser_name, args)
+
 	def get(self):
 		raise Exception("Function get must be implemented by parser")
 	

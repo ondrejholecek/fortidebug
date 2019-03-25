@@ -52,3 +52,6 @@ class ParserProcesses(EasyParser):
 
 		return result
 
+	def simple_value(self, result, name):
+		return [e['PID'] for e in result]
+		

@@ -5,6 +5,8 @@ import os
 # to be able to import our modules from the directory above
 os.sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import sys
+
 from parsers.CurrentTime import ParserCurrentTime
 from parsers.Processes import ParserProcesses
 from parsers.ProcessStat import ParserProcessStat
@@ -21,13 +23,11 @@ and this collects the actual status only once per `cycle-time`, hence this is no
 very accurate. 
 
 However, it can be used to identify the process occupying the specific core all the time.
-""")
+""", supports_script=True)
 
 def do(sshc, pid_group_count):
-	etime = ParserCurrentTime(sshc).get()
-	
+	processes = ParserProcesses(sshc).get2()
 	cpus = {}
-	processes = ParserProcesses(sshc).get()
 
 	# this is to be able to send group of PIDs at once
 	for i in range(0, len(processes), pid_group_count):
@@ -42,17 +42,21 @@ def do(sshc, pid_group_count):
 		for stat in ParserProcessStat(sshc).get(pids):
 			if stat['current_CPU'] not in cpus: cpus[stat['current_CPU']] = []
 			cpus[stat['current_CPU']].append("'%s'[%s](%i)" % (stat['name'], stat['state'], stat['PID'],))
+
+	etime = ParserCurrentTime(sshc).get()
 	
 	for cpu in sorted(cpus.keys()):
 		print "[%s] CPU#%i: %s" % (etime, cpu, " ".join(cpus[cpu]),)
 		
+	sys.stdout.flush()
+	return etime
 
 if __name__ == '__main__':
 	try:
 		cycle(do, {
 			'sshc': sshc, 
 			'pid_group_count': args.pid_group,
-		}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
+		}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug, interactive=args.interactive)
 	except KeyboardInterrupt:
 		sshc.destroy()
 

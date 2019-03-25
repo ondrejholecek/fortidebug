@@ -19,13 +19,14 @@ class ParserProcessStat(EasyParser):
 
 		results = []
 
-		pss = self.sshc.clever_exec("fnsysctl cat %s" % (files,))
+		pss = self.sshc.clever_exec("fnsysctl cat%s" % (files,))
 		for ps in pss.split("\n"):
+			if "No such file or directory" in ps: continue
 			ps = ps.strip()
 			if len(ps) == 0: continue
 			g = self.re_first_part.search(ps)
 			if not g:
-				print "Debug: cannot parse '%s'" % (ps,)
+#				print "Debug: cannot parse '%s'" % (ps,)
 				continue
 
 			others = g.group(3).split()

@@ -39,5 +39,24 @@
 			<simple context="global"    >fnsysctl cat /proc/stat                 </simple>
 		</cycle>
 
+		<cycle name="processes_on_cpu" desc="Data for utility processes_on_cpu.py" profile="main" parameters="main">
+			<echo>processes_on_cpu.py debug commands.</echo>
+
+			<parser name="Processes">
+				<store>
+					<param type="processes_pids" name="pids" />
+				</store>
+			</parser>
+
+			<group list="pids" size="10" output="cats">
+				<prefix>fnsysctl cat </prefix>
+				<command>/proc/${part}/stat</command>
+			</group>
+
+			<foreach list="cats" name="simple">
+				<simple>${simple}</simple>
+			</foreach>
+		</cycle>
+
 	</cycles>
 </fortidebug_scriptfile>

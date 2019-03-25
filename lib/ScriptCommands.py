@@ -137,6 +137,18 @@ class ScriptCommands:
 		else:
 			self.info['prompt'] = "%s %s " % (hostname, self.info['prompt_character'],)
 
+	def get_parsed(self, parser, params):
+		while True:
+			obj = self.script.next()
+			if obj == None: 
+				raise KeyboardInterrupt()
+
+			if obj['info']['type'] != 'parser': continue
+			if obj['info']['parser_name'] != parser: continue
+			if obj['info']['parser_input'] != list(params): continue
+
+			return obj['output']
+
 	def special_commands(self, command, vdom):
 		if command in ('exe date', 'exe time'):
 			d = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(self.last_used_timestamp))
