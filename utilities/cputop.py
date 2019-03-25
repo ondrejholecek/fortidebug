@@ -10,7 +10,6 @@ from parsers.Processes import ParserProcesses
 from parsers.ProcessCPU import ParserProcessCPU
 from _common import ssh, prepend_timestamp, cycle
 
-import time
 import sys
 import re
 
@@ -18,7 +17,7 @@ sshc, args = ssh([
 	{ 'name':'--max',          'type':int, 'default':25, 'help':'How many lines of output to show (0 for all)' },
 	{ 'name':'--sort-by',      'default':'total', 'choices':['total', 'user', 'system', 'pid'], 'help':'How to sort the output' },
 	{ 'name':'--collect-time', 'type':int, 'default':1,    'help':'How long to collect data in each cycle' },
-	{ 'name':'--pid-group',    'type':int, 'default':1000, 'help':'How many PIDs to query at once' },
+	{ 'name':'--pid-group',    'type':int, 'default':50, 'help':'How many PIDs to query at once' },
 	{ 'name':'--process-name', 'default':None, 'help': 'Regular expression on the process name' },
 	{ 'name':'--cpu',          'type':int, 'default':None, 'action':'append', 'help':'CPU number to show processes on (can repeat)' },
 	{ 'name':'--state',        'type':str, 'default':None, 'action':'append', 'help':'Process state to show (can repeat)' },
@@ -41,7 +40,7 @@ Different sorting algorithms can be applied (see help for `--sort-by` option).
 
 It is possible to only shown the processes in the specific state (see help for `--state` option),
 or processes running on a specific CPU (see help for `--cpu` option).
-""")
+""", supports_script=True)
 
 def do(sshc, cache, pid_group_count, max_lines, sort_by, process_name, cpus, states, hz, ppid, tpid, negate):
 	# filter only desired process (or all if process == None)
@@ -49,7 +48,7 @@ def do(sshc, cache, pid_group_count, max_lines, sort_by, process_name, cpus, sta
 	else: process_re = None
 
 	processes = []
-	for process in ParserProcesses(sshc).get():
+	for process in ParserProcesses(sshc).get2():
 		if process_re == None or process_re.search(process['cmd']):
 			processes.append(process)
 	
@@ -77,12 +76,13 @@ def do(sshc, cache, pid_group_count, max_lines, sort_by, process_name, cpus, sta
 				pids.append(p['PID'])
 
 		current.append(ParserProcessCPU(sshc).get(pids))
-
+	
 	if previous != None:
 		overall_cpus = {'user':0, 'system':0, 'idle':0, 'iowait':0, 'irq':0, 'softirq':0}
 		util = {}
 		for i in range(len(previous)):
 			diff_overall, diff_processes, diff_time = ParserProcessCPU(sshc).diff(previous[i], current[i])
+			print diff_time
 			for pid in diff_processes.keys():
 				if cpus != None and diff_processes[pid]['last_cpu'] not in cpus: 
 					continue
@@ -132,9 +132,12 @@ def do(sshc, cache, pid_group_count, max_lines, sort_by, process_name, cpus, sta
 
 		print_formatted(util, overall_cpus, max_lines, etime, sort_by, filters_applied)
 
+		sys.stdout.flush()
+		cache['previous'] = current
+		return etime
+
 	cache['previous'] = current
-	sys.stdout.flush()
-	return etime
+	return None
 
 def print_formatted(util, overall_cpus, top, last_time, sortby, filters_applied):
 	cnt = 0

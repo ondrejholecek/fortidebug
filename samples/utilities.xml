@@ -7,7 +7,7 @@
 <fortidebug_scriptfile version="1">
 	<profiles>
 		<profile name="main">
-			<intercommand_sleep>0.5</intercommand_sleep>
+			<intercommand_sleep>0.01</intercommand_sleep>
 		</profile>
 	</profiles>
 
@@ -37,6 +37,25 @@
 
 			<simple context="mgmt_vdom" >diagnose firewall packet distribution   </simple>
 			<simple context="global"    >fnsysctl cat /proc/stat                 </simple>
+		</cycle>
+
+		<cycle name="cputop" desc="Data for utility cputop.py" profile="main" parameters="main">
+			<echo>cputop.py debug commands.</echo>
+
+			<parser name="Processes">
+				<store>
+					<param type="processes_pids" name="pids" />
+				</store>
+			</parser>
+
+			<group list="pids" size="50" output="cats">
+				<prefix>fnsysctl cat /proc/stat </prefix>
+				<command>/proc/${part}/stat</command>
+			</group>
+
+			<foreach list="cats" name="simple">
+				<simple>${simple}</simple>
+			</foreach>
 		</cycle>
 
 		<cycle name="processes_on_cpu" desc="Data for utility processes_on_cpu.py" profile="main" parameters="main">

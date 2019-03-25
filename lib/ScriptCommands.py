@@ -149,6 +149,9 @@ class ScriptCommands:
 
 			return obj['output']
 
+	def get_last_timestamp(self):
+		return self.last_used_timestamp
+
 	def special_commands(self, command, vdom):
 		if command in ('exe date', 'exe time'):
 			d = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(self.last_used_timestamp))

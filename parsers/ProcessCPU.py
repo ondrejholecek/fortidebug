@@ -37,7 +37,7 @@ class ParserProcessCPU(EasyParser):
 		results = { 
 			'global'    : None, 
 			'processes' : {},
-			'time'      : time.time(),
+			'time'      : self.sshc.get_last_timestamp(),
 		}
 
 		results['global'] = {
@@ -87,6 +87,7 @@ class ParserProcessCPU(EasyParser):
 		}
 
 		difftime = current_results['time'] - old_results['time']
+		if difftime == 0: difftime = 1 # precision is per second due to script file
 		
 		# per process
 		processes = {}
