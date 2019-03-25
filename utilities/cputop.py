@@ -8,7 +8,7 @@ os.sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from parsers.CurrentTime import ParserCurrentTime
 from parsers.Processes import ParserProcesses
 from parsers.ProcessCPU import ParserProcessCPU
-from _common import ssh, prepend_timestamp
+from _common import ssh, prepend_timestamp, cycle
 
 import time
 import sys
@@ -43,7 +43,7 @@ It is possible to only shown the processes in the specific state (see help for `
 or processes running on a specific CPU (see help for `--cpu` option).
 """)
 
-def do(sshc, pid_group_count, collect_time, max_lines, sort_by, process_name, cpus, states, hz, ppid, tpid, negate):
+def do(sshc, cache, pid_group_count, max_lines, sort_by, process_name, cpus, states, hz, ppid, tpid, negate):
 	# filter only desired process (or all if process == None)
 	if process_name != None: process_re = re.compile(process_name)
 	else: process_re = None
@@ -62,79 +62,79 @@ def do(sshc, pid_group_count, collect_time, max_lines, sort_by, process_name, cp
 	if sort_by != None      : filters_applied += "SORT[%s] " % (sort_by,)
 
 	#
-	previous = None
-	while True:
-		etime = ParserCurrentTime(sshc).get()
-	
-		# this is to be able to send group of PIDs at once
-		current = []
-		for i in range(0, len(processes), pid_group_count):
-			try:
-				pids = []
-				for y in range(pid_group_count): pids.append(processes[i+y]['PID'])
-			except IndexError:
-				pids = []
-				for p in processes[i:]:
-					pids.append(p['PID'])
-	
-			current.append(ParserProcessCPU(sshc).get(pids))
-	
-		if previous != None:
-			overall_cpus = {'user':0, 'system':0, 'idle':0, 'iowait':0, 'irq':0, 'softirq':0}
-			util = {}
-			for i in range(len(previous)):
-				diff_overall, diff_processes, diff_time = ParserProcessCPU(sshc).diff(previous[i], current[i])
-				for pid in diff_processes.keys():
-					if cpus != None and diff_processes[pid]['last_cpu'] not in cpus: 
-						continue
-					if states != None and diff_processes[pid]['last_state'] not in states: 
-						continue
+	previous = cache['previous']
+	etime = ParserCurrentTime(sshc).get()
 
-					show = False
-					if (tpid == None and ppid == None): show = True
-					elif (ppid != None and diff_processes[pid]['parent'] in ppid): show = True
-					elif (tpid != None and pid in tpid): show = True
-					if (not negate) and (not show): continue
-					elif (negate) and (show): continue
+	# this is to be able to send group of PIDs at once
+	current = []
+	for i in range(0, len(processes), pid_group_count):
+		try:
+			pids = []
+			for y in range(pid_group_count): pids.append(processes[i+y]['PID'])
+		except IndexError:
+			pids = []
+			for p in processes[i:]:
+				pids.append(p['PID'])
 
-					util[pid] = {}
-					util[pid]['name']       = diff_processes[pid]['name']
-					util[pid]['pid']        = pid
-					util[pid]['parent']     = diff_processes[pid]['parent']
-					util[pid]['last_cpu']   = diff_processes[pid]['last_cpu']
-					util[pid]['last_state'] = diff_processes[pid]['last_state']
+		current.append(ParserProcessCPU(sshc).get(pids))
 
-					if diff_overall['user'] != 0:
-						util[pid]['user']   = (float(diff_processes[pid]['user'])*100) / diff_overall['user']
-					else:
-						util[pid]['user']   = float(0.0)
+	if previous != None:
+		overall_cpus = {'user':0, 'system':0, 'idle':0, 'iowait':0, 'irq':0, 'softirq':0}
+		util = {}
+		for i in range(len(previous)):
+			diff_overall, diff_processes, diff_time = ParserProcessCPU(sshc).diff(previous[i], current[i])
+			for pid in diff_processes.keys():
+				if cpus != None and diff_processes[pid]['last_cpu'] not in cpus: 
+					continue
+				if states != None and diff_processes[pid]['last_state'] not in states: 
+					continue
 
-					if diff_overall['system'] != 0:
-						util[pid]['system'] = (float(diff_processes[pid]['system'])*100) / diff_overall['system']
-					else:
-						util[pid]['system'] = float(0.0)
+				show = False
+				if (tpid == None and ppid == None): show = True
+				elif (ppid != None and diff_processes[pid]['parent'] in ppid): show = True
+				elif (tpid != None and pid in tpid): show = True
+				if (not negate) and (not show): continue
+				elif (negate) and (show): continue
 
-					if diff_time != 0:
-						util[pid]['global_user']   = (float(diff_processes[pid]['user'])*100) / (diff_time*hz)
-						util[pid]['global_system'] = (float(diff_processes[pid]['system'])*100) / (diff_time*hz)
-					else:
-						util[pid]['global_user'] = float(0.0)
-						util[pid]['global_system'] = float(0.0)
+				util[pid] = {}
+				util[pid]['name']       = diff_processes[pid]['name']
+				util[pid]['pid']        = pid
+				util[pid]['parent']     = diff_processes[pid]['parent']
+				util[pid]['last_cpu']   = diff_processes[pid]['last_cpu']
+				util[pid]['last_state'] = diff_processes[pid]['last_state']
 
-					util[pid]['total']  = util[pid]['user'] + util[pid]['system']
+				if diff_overall['user'] != 0:
+					util[pid]['user']   = (float(diff_processes[pid]['user'])*100) / diff_overall['user']
+				else:
+					util[pid]['user']   = float(0.0)
 
-				# overall - we will count an average
-				for tmp in ['user', 'system', 'idle', 'iowait', 'irq', 'softirq']:
-					overall_cpus[tmp] += (float(diff_overall[tmp])*100) / (diff_time*hz)
+				if diff_overall['system'] != 0:
+					util[pid]['system'] = (float(diff_processes[pid]['system'])*100) / diff_overall['system']
+				else:
+					util[pid]['system'] = float(0.0)
 
-			for tmp in overall_cpus.keys(): # max average and convert to percentages
-				if len(previous) > 0: overall_cpus[tmp] = overall_cpus[tmp] / len(previous)
-				else: overall_cpus[tmp] = 0
+				if diff_time != 0:
+					util[pid]['global_user']   = (float(diff_processes[pid]['user'])*100) / (diff_time*hz)
+					util[pid]['global_system'] = (float(diff_processes[pid]['system'])*100) / (diff_time*hz)
+				else:
+					util[pid]['global_user'] = float(0.0)
+					util[pid]['global_system'] = float(0.0)
 
-			print_formatted(util, overall_cpus, max_lines, etime, sort_by, filters_applied)
+				util[pid]['total']  = util[pid]['user'] + util[pid]['system']
 
-		previous = current
-		time.sleep(collect_time)
+			# overall - we will count an average
+			for tmp in ['user', 'system', 'idle', 'iowait', 'irq', 'softirq']:
+				overall_cpus[tmp] += (float(diff_overall[tmp])*100) / (diff_time*hz)
+
+		for tmp in overall_cpus.keys(): # max average and convert to percentages
+			if len(previous) > 0: overall_cpus[tmp] = overall_cpus[tmp] / len(previous)
+			else: overall_cpus[tmp] = 0
+
+		print_formatted(util, overall_cpus, max_lines, etime, sort_by, filters_applied)
+
+	cache['previous'] = current
+	sys.stdout.flush()
+	return etime
 
 def print_formatted(util, overall_cpus, top, last_time, sortby, filters_applied):
 	cnt = 0
@@ -193,8 +193,25 @@ if __name__ == '__main__':
 		ppid = args.ppid
 		negate = args.negate_pid
 
+	cache = {
+		'previous': None,
+	}
+
 	try:
-		do(sshc, args.pid_group, args.collect_time, args.max, args.sort_by, args.process_name, args.cpu, args.state, args.hz, ppid, args.pid, negate)
+		cycle(do, {
+			'sshc'            : sshc,
+			'cache'           : cache,
+			'pid_group_count' : args.pid_group,
+			'max_lines'       : args.max,
+			'sort_by'         : args.sort_by,
+			'process_name'    : args.process_name,
+			'cpus'            : args.cpu,
+			'states'          : args.state,
+			'hz'              : args.hz,
+			'ppid'            : ppid,
+			'tpid'            : args.pid,
+			'negate'          : negate,
+		}, args.collect_time, cycles_left=[args.max_cycles], debug=args.debug, interactive=args.interactive)
 	except KeyboardInterrupt:
 		sshc.destroy()
 
