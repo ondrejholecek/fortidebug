@@ -186,6 +186,30 @@
 				</input>
 			</parser>
 
+			<!-- Group allows to create a longer command composed of multiple entries from
+			     the given list. 
+
+				  It expect the list name in "list" attribute and will use the "size" entries
+				  in each iteration. The output list specified by "output" attribute will 
+				  contain [prefix]<command1,command2,...,commandSIZE>[suffix] in each entry.
+
+				  Sub-element "prefix" and "postfix" as voluntary. Optional attribute called
+				  "separater" specified how the commands are divided from each other, by 
+				  default it is single space.
+
+				  Following example contains list of 10 PIDs in "pids" an after the execution
+				  the list "cats" will contain following entries:
+				  - "fnsysctl cat /proc/1/stat /proc/2/stat /proc/3/stat end"
+				  - "fnsysctl cat /proc/4/stat /proc/5/stat /proc/6/stat end"
+				  - "fnsysctl cat /proc/7/stat /proc/8/stat /proc/9/stat end"
+				  - "fnsysctl cat /proc/10/stat end"
+			-->
+			<group list="pids" size="3" output="cats">
+				<prefix>fnsysctl cat </prefix>
+				<command>/proc/${part}/stat</command>
+				<suffix>end</suffix>
+			</group>
+
 			<!-- Foreach is a construction that allows to specify the list-type parameter
 			     and run repeat its content for each element.
 

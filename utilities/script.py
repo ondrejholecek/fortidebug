@@ -349,6 +349,9 @@ class Script:
 
 			elif child.tag == 'foreach':
 				self.do_foreach(child, profile, params)
+
+			elif child.tag == 'group':
+				self.do_group(child, profile, params)
 	
 			elif child.tag == 'subcycle':
 				self.do_subcycle(child, profile, params)
@@ -522,6 +525,53 @@ class Script:
 				del params[use]
 		else:
 			params[use] = originals[use]
+
+	def do_group(self, cmd, profile, params):
+		for tmp in ('list', 'output', 'size'):
+			if tmp not in cmd.attrib:
+				raise MyException("Group: attribute '%s' missing" % (tmp,))
+
+		if cmd.attrib['list'] not in params:
+			raise MyException("Group: list '%s' does not exist in params")
+		elif params[cmd.attrib['list']] == None:
+			return
+		elif type(params[cmd.attrib['list']]) != type([]):
+			raise MyException("Group: parameter '%s' is not a list")
+
+		try:
+			size = int(cmd.attrib['size'])
+		except ValueError:
+			raise MyException("Group: param 'size' must contain numbers")
+
+		if 'delimiter' not in cmd.attrib:
+			delimiter = ' '
+		else:
+			delimiter = cmd.attrib['delimiter']
+
+		# prefix and postfix and command extraction
+		prefix  = ""
+		suffix  = ""
+		command = None
+
+		tmp = cmd.find("prefix")
+		if tmp != None: prefix = tmp.text
+		tmp = cmd.find("suffix")
+		if tmp != None: suffix = tmp.text
+		command = cmd.find("command")
+		if command == None: raise MyException("Group: sub-element 'command' is missing")
+
+		# group by size
+		groups = []
+		for i in range(0, len(params[cmd.attrib['list']]), size):
+			tmp = prefix
+			for part in params[cmd.attrib['list']][i:i+size]:
+				tmp += self.element_get_command(command, profile, {'part':part}) + delimiter
+			tmp = tmp[:-len(delimiter)]
+			tmp += suffix
+			groups.append(tmp)
+
+		# and save it
+		params[cmd.attrib['output']] = groups
 
 	def do_subcycle(self, cmd, profile, params):
 		for tmp in ('name',):
