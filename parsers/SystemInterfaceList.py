@@ -1,4 +1,5 @@
 from EasyParser import EasyParser
+from models.GenericModel import GetModelSpec
 
 import re
 
@@ -33,11 +34,27 @@ class ParserSystemInterfaceList(EasyParser):
 		return ifaces
 
 	def simple_value(self, result, name):
+		# get usable interfaces
+		to_delete = ('ssl.root', 'root', 'vsys_ha', 'vsys_fgfm')
+		real_ifaces = []
+		for tmp in result.keys():
+			if tmp in to_delete: continue
+			real_ifaces.append(tmp)
+
+		#
 		if name == 'nic_names_external':
-			to_delete = ('ssl.root', 'root', 'vsys_ha', 'vsys_fgfm')
-			r = []
-			for tmp in result.keys():
-				if tmp in to_delete: continue
-				r.append(tmp)
-			return r
+			return real_ifaces
 	
+		elif name == "npu6s_used":
+			spec = GetModelSpec(self.sshc.get_info()['serial'])
+			if spec == None: return []
+
+			npus6 = []
+			for iface in real_ifaces:
+				if spec.ports[iface]['npu'] == None: continue
+				if spec.ports[iface]['npu'].source == spec.ports[iface]['npu'].SRC_NP6_PORTSTATS:
+					npu = int(spec.ports[iface]['npu'].counter.split('/')[0])
+					if npu not in npus6: npus6.append(npu)
+			npus6.sort()
+
+			return npus6

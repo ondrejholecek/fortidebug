@@ -62,5 +62,26 @@
 			<subcycle name="cputop"/>
 		</cycle>
 
+<!--
+		<cycle name="nic_utilization" desc="Data for utility nic_utilization.py" profile="main" parameters="main">
+			<echo>nic_utilization.py debug commands.</echo>
+
+			<parser name="SystemInterfaceList">
+				<input>
+					<static value="" type='none'/> 
+					<static value="1" type='boolean'/> 
+				</input>
+				<store>
+					<param type="nic_names_external" name="nics" />
+					<param type="npu6s_used" name="npu6s" />
+				</store>
+			</parser>
+
+			<foreach list="nics" name="nic">
+				<simple>diagnose hardware deviceinfo nic ${nic}</simple>
+			</foreach>
+		</cycle>
+-->
+
 	</cycles>
 </fortidebug_scriptfile>
