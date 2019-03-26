@@ -614,6 +614,10 @@ class Script:
 						ptype = str
 					elif iparam.attrib['type'] == 'int':
 						ptype = int
+					elif iparam.attrib['type'] == 'boolean':
+						ptype = bool
+					elif iparam.attrib['type'] == 'none':
+						ptype = lambda x: None
 					else:
 						raise MyException("Parser: input parameter type '%s' is invalid" % (iparam.attrib['type'],))
 
