@@ -32,4 +32,4 @@ class EasyParser:
 	# - list of tuples - in foreach cycle each element of the inner tuple will be
 	#                    assigned to its variable in each iteration 
 	def simple_value(self, result, name):
-		raise Exception("Function get must be implemented by parser")
+		raise Exception("Function simple_value must be implemented by parser")
