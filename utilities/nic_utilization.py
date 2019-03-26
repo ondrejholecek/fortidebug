@@ -330,13 +330,10 @@ def do(sshc, ifaces, spec, info):
 		check_ifaces = ifaces
 	
 	# select only those that are up
-	all_ifaces = ParserSystemInterfaceList(sshc).get()
-	up_ifaces = []
+	up_ifaces = ParserSystemInterfaceList(sshc).get2(None, True)
 
-	for iface in check_ifaces:
-		if iface not in all_ifaces: continue
-		if not info['all_ifaces'] and 'run' not in all_ifaces[iface]['flags']: continue
-		up_ifaces.append(iface)
+	for iface in up_ifaces.keys():
+		if iface not in check_ifaces: del up_ifaces[iface]
 	
 	# get counters
 	buf_np6 = {}

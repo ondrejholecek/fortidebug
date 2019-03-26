@@ -7,7 +7,7 @@ class ParserSystemInterfaceList(EasyParser):
 		self.re_nl = re.compile("\r\n\r\n")
 		self.re_kv = re.compile("(\S+)=(.+?)\s*(?=\S+=|$)", re.DOTALL | re.M)
 
-	def get(self, types=None):
+	def get(self, types=None, only_up=False):
 		ifaces = {}
 
 		ilist = self.sshc.clever_exec("diag netlink interface list", "")
@@ -18,6 +18,7 @@ class ParserSystemInterfaceList(EasyParser):
 				tmp[key] = value
 
 			if types != None and int(tmp['type']) not in types: continue
+			if only_up == True and 'run' not in tmp['flags'].split(' '): continue
 
 			try:
 				ifaces[tmp['if']] = {
@@ -30,3 +31,13 @@ class ParserSystemInterfaceList(EasyParser):
 			except: continue
 		
 		return ifaces
+
+	def simple_value(self, result, name):
+		if name == 'nic_names_external':
+			to_delete = ('ssl.root', 'root', 'vsys_ha', 'vsys_fgfm')
+			r = []
+			for tmp in result.keys():
+				if tmp in to_delete: continue
+				r.append(tmp)
+			return r
+	
