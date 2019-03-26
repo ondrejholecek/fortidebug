@@ -10,7 +10,7 @@ class ParserNIC2(EasyParser):
 		self.re_space = re.compile("^\s*([^\s\r\n]+?)\s+(.*?)\s*$", re.M)
 
 	def get(self, iface):
-		out = self.sshc.clever_exec("diag hardware deviceinfo nic %s" % (iface,))
+		out = self.sshc.clever_exec("diagnose hardware deviceinfo nic %s" % (iface,))
 		if 'FortiASIC NP6 Adapter' in out:
 			(generic, counters, raw) = self.parse_np6(iface, out)
 		elif 'Broadcom 570x Tigon3 Ethernet Adapter' in out:
