@@ -19,6 +19,7 @@ sshc, args = ssh([
 	{ 'name':'--mgmt-vdom',    'default':False, 'action':'store_true',  'help':'Use management VDOM to execute the command' },
 	{ 'name':'--grep',         'default':None, 'help':'Show only lines matching the regular expression' },
 	{ 'name':'--directory-output', 'default':None, 'help':'Dump each command output as a separate file in a specified directory' },
+	{ 'name':'--file-output',  'default':None, 'help':'Append the output to the specified file' },
 ], """
 Execute specific command every `--cycle-time`. 
 
@@ -33,7 +34,7 @@ is used as the VDOM name.
 Optionally you can use `--grep` option to only print the lines matching the regular expression.
 """)
 
-def do(sshc, commands, vdom, grep, directory):
+def do(sshc, commands, vdom, grep, output):
 	etime = ParserCurrentTime(sshc).get()
 	
 	for command in commands:
@@ -48,31 +49,38 @@ def do(sshc, commands, vdom, grep, directory):
 
 		out = sshc.clever_exec(this_command, this_vdom)
 		if grep == None:
-			output(sshc, out, etime, this_command, directory)
+			print_output(sshc, out, etime, this_command, output)
 		else:
 			for line in out.split("\n"):
 				if not grep.search(line): continue
-				output(sshc, line, etime, this_command, directory)
+				print_output(sshc, line, etime, this_command, output)
 	
 		sys.stdout.flush()
 	
-def output(sshc, txt, etime, command_name, directory):
-	# Writing to stdout is simple
-	if directory == None:
+def print_output(sshc, txt, etime, command_name, output):
+	if output['directory']:
+		# If directory is specified, write the output per-file to the directory
+		info = sshc.get_info()
+		hostname = info['hostname']
+		if info['hostname_extension'] != None: hostname += info['hostname_extension']
+		hostname = re.sub('[^a-zA-Z0-9-]', ' ', hostname).strip().replace(' ', '_')
+	
+		fname = "%s/%s.%s.%s" % (output['directory'], hostname, command_name.replace(' ', '_'), etime.as_timestamp(),)
+		with open(fname, "wb") as f:
+			f.write(txt)
+	
+		print prepend_timestamp("Saved to %s" % (fname,), etime, command_name)
+
+	elif output['file']:
+		with open(output['file'], "ab") as f:
+			f.write(txt)
+
+		print prepend_timestamp("Appeneded to %s" % (output['file'],), etime, command_name)
+
+	else:
 		print prepend_timestamp(txt, etime, command_name)
 		return
 	
-	# If directory is specified, write the output per-file to the directory
-	info = sshc.get_info()
-	hostname = info['hostname']
-	if info['hostname_extension'] != None: hostname += info['hostname_extension']
-	hostname = re.sub('[^a-zA-Z0-9-]', ' ', hostname).strip().replace(' ', '_')
-
-	fname = "%s/%s.%s.%s" % (directory, hostname, command_name.replace(' ', '_'), etime.as_timestamp(),)
-	with open(fname, "wb") as f:
-		f.write(txt)
-
-	print prepend_timestamp("Saved to %s" % (fname,), etime, command_name)
 
 if __name__ == '__main__':
 	#
@@ -97,7 +105,10 @@ if __name__ == '__main__':
 			'commands': args.command,
 			'vdom': vdom,
 			'grep': grep,
-			'directory': args.directory_output,
+			'output': {
+				'directory': args.directory_output,
+				'file'     : args.file_output,
+			},
 		}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug)
 	except KeyboardInterrupt:
 		sshc.destroy()
