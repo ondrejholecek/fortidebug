@@ -79,6 +79,9 @@ class SSHCommands:
 	def get_local_param(self, name):
 		return self.local_params[name]
 
+	def get_last_timestamp(self):
+		return int(time.time())
+
 	def destroy(self):
 		if self.channel != None: self.channel.close()
 		if self.client != None: self.client.close()
@@ -123,6 +126,7 @@ class SSHCommands:
 		if not g: 
 			raise Exception("Cannot find version in 'get system status' output")
 		else:
+
 			if self.prompt_character == None:
 				self.info['prompt_character'] = g.group(1)
 			else:
