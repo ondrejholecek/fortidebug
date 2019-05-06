@@ -13,11 +13,12 @@ import argparse
 import pytz
 
 class Script2Plain:
-	def __init__(self, inp, out, out_tz, inp_compressed):
+	def __init__(self, inp, out, out_tz, inp_compressed, excluded):
 		self.inp = inp
 		self.out = out
 		self.out_tz = out_tz
 		self.inp_compressed = inp_compressed
+		self.excluded = excluded
 
 		if self.out != None:
 			self.output = open(self.out, "wb")
@@ -35,6 +36,7 @@ class Script2Plain:
 		self.first_output_at = None
 		self.last_output_at  = None
 		self.commands = 0
+		self.excluded_commands = 0
 
 		self.scriptfile = ScriptFile(self.inp, self.inp_compressed)
 	
@@ -58,6 +60,11 @@ class Script2Plain:
 			sr_timestamp = obj['timestamp']
 			sr_output    = obj['output']
 			sr_cycle     = obj['cycle']
+
+			# isn't it excluded?
+			if sr_command in self.excluded:
+				self.excluded_commands += 1
+				return True
 	
 			# time
 			dt = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(sr_timestamp))
@@ -104,6 +111,7 @@ parser.add_argument('--output', default=None, type=str, help='Output file name (
 parser.add_argument('--tz-output', default='UTC', type=str, help='Timezone expected on output, default "UTC"')
 parser.add_argument('--timezones', default=False, action='store_true', help='List common timezones')
 parser.add_argument('--no-compressed', default=False, action='store_true', help='Use if input is already uncompressed')
+parser.add_argument('--exclude', default=[], action='append', help='Command to exclude from output')
 args = parser.parse_args()
 
 # list timezones
@@ -121,7 +129,7 @@ except pytz.exceptions.UnknownTimeZoneError, e:
 	sys.exit(1)
 
 
-s = Script2Plain(args.input, args.output, output_tz, not args.no_compressed)
+s = Script2Plain(args.input, args.output, output_tz, not args.no_compressed, args.exclude)
 try:
 	while s.next(): pass
 except KeyboardInterrupt:
@@ -134,6 +142,7 @@ try:
 	line += "    Remote serial number    : %s\n" % (s.params['sn'],)
 	line += "    Number of cycles        : %i\n" % (s.last_cycle,)
 	line += "    Number of commands      : %i\n" % (s.commands,)
+	line += "    Excluded commands       : %i\n" % (s.excluded_commands,)
 	line += "    First command output at : %s\n" % (s.first_output_at,)
 	line += "    Last command output at  : %s\n" % (s.last_output_at,)
 	sys.stderr.write(line)
