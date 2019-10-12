@@ -80,7 +80,7 @@ class SSHCommands:
 		return self.local_params[name]
 
 	def get_last_timestamp(self):
-		return int(time.time())
+		return time.time()
 
 	def destroy(self):
 		if self.channel != None: self.channel.close()
@@ -165,6 +165,8 @@ class SSHCommands:
 			raise Exception("Cannot find vdoms configuration in 'get system status' output")
 
 		if 'enable' in g.group(1):
+			self.info['vdoms_enabled'] = True
+		elif 'multiple' in g.group(1):
 			self.info['vdoms_enabled'] = True
 		elif 'disable' in g.group(1):
 			self.info['vdoms_enabled'] = False
