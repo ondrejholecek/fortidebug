@@ -21,6 +21,7 @@ sshc, args = ssh([
 	{ 'name':'--cpu', 'type':int, 'default':[], 'action':'append',  'help':'Summarize ticks from selected CPUs' },
 	{ 'name':'--no-soft', 'default':False, 'action':'store_true',  'help':'Do not show softirqs' },
 	{ 'name':'--no-hard', 'default':False, 'action':'store_true',  'help':'Do not show hardirqs' },
+	{ 'name':'--desc',   'type':str, 'help':'Regex to filter interrupts by description' },
 	{ 'name':'--hz',           'type':int, 'default':100,  'help':'CONFIG_HZ of device, do not change' },
 ], """
 """, supports_script=True)
@@ -68,7 +69,7 @@ def sort_interrupts(diff, cpus='each', ignore_zero=True):
 		ret.append(s)
 	return ret
 
-def do(sshc, cache, max_lines, display_type, hz, soft, hard, show_zeros):
+def do(sshc, cache, max_lines, display_type, hz, soft, hard, show_zeros, description):
 	ints  = ParserInterrupts(sshc).get(soft=soft, hard=hard)
 	usage = ParserProcessCPU(sshc).get([])
 	etime = ParserCurrentTime(sshc).get()
@@ -110,6 +111,7 @@ def do(sshc, cache, max_lines, display_type, hz, soft, hard, show_zeros):
 	elif hard: filters_applied += "TYPE[hard] "
 	if show_zeros: filters_applied += "ZERO[yes] "
 	else: filters_applied += "ZERO[no] "
+	if description != None: filters_applied += "DESC[%s] " % (description,)
 
 	print prepend_timestamp("Overall CPU utilization: %3.1f %% user, %3.1f %% system, %3.1f %% idle" % (
 		overall_cpus['user'], overall_cpus['system'], overall_cpus['idle'],
@@ -120,10 +122,16 @@ def do(sshc, cache, max_lines, display_type, hz, soft, hard, show_zeros):
 	print prepend_timestamp(filters_applied, etime, 'inttop')
 	print prepend_timestamp("%-11s %5s %9s %10s %4s  %s" % ("LINE", "SOURCE", "CPU(s)", "RUNS", "PERC", "DESCRIPTION",), etime, 'inttop')
 
+	if description != None:
+		descr_re = re.compile(description)
+	else:
+		descr_re = None
+
 	for k in diff_sorted_keys:
 		((iname, itype), iticks) = k
 		source = ints['interrupts'][iname]['source']
 		desc = ints['interrupts'][iname]['description']
+		if descr_re != None and descr_re.search(desc) == None: continue
 		if len(desc) > 30: desc = desc[:25] + "[...]"
 		if type(itype) == tuple: itype = 'selected'
 
@@ -164,6 +172,7 @@ if __name__ == '__main__':
 			'soft': soft,
 			'hard': hard,
 			'show_zeros': args.show_zeros,
+			'description': args.desc,
 		}, args.collect_time, cycles_left=[args.max_cycles], debug=args.debug, interactive=args.interactive)
 	except KeyboardInterrupt:
 		sshc.destroy()
