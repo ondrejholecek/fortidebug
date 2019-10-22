@@ -84,10 +84,14 @@ class ParserInterrupts(EasyParser):
 	def prepare(self):
 		self.re_cpus      = re.compile("^\s+CPU.*?(\d+)\s+\n")
 
-	def get(self, soft=True, hard=True):
+	def get(self, soft=True, hard=True, description=None):
 		interrupts   = {}
 		collected_on = None
 		cpus         = None
+		desc_re      = None
+
+		if description != None:
+			desc_re = re.compile(description)
 
 		if hard:
 			hw = self.get_real('hard')
@@ -103,6 +107,11 @@ class ParserInterrupts(EasyParser):
 
 		if collected_on == None or cpus == None: 
 			raise Exception('Either soft or hard interrupts must be selected')
+
+		# filter out not matching
+		for irq in interrupts.keys():
+			if desc_re == None or desc_re.search(interrupts[irq]['description']) != None: continue
+			del interrupts[irq]
 
 		return {
 			'collected_on': collected_on,

@@ -70,7 +70,7 @@ def sort_interrupts(diff, cpus='each', ignore_zero=True):
 	return ret
 
 def do(sshc, cache, max_lines, display_type, hz, soft, hard, show_zeros, description):
-	ints  = ParserInterrupts(sshc).get(soft=soft, hard=hard)
+	ints  = ParserInterrupts(sshc).get(soft=soft, hard=hard, description=description)
 	usage = ParserProcessCPU(sshc).get([])
 	etime = ParserCurrentTime(sshc).get()
 	
@@ -122,24 +122,20 @@ def do(sshc, cache, max_lines, display_type, hz, soft, hard, show_zeros, descrip
 	print prepend_timestamp(filters_applied, etime, 'inttop')
 	print prepend_timestamp("%-11s %5s %9s %10s %4s  %s" % ("LINE", "SOURCE", "CPU(s)", "RUNS", "PERC", "DESCRIPTION",), etime, 'inttop')
 
-	if description != None:
-		descr_re = re.compile(description)
-	else:
-		descr_re = None
-
 	for k in diff_sorted_keys:
 		((iname, itype), iticks) = k
 		source = ints['interrupts'][iname]['source']
 		desc = ints['interrupts'][iname]['description']
-		if descr_re != None and descr_re.search(desc) == None: continue
 		if len(desc) > 30: desc = desc[:25] + "[...]"
 		if type(itype) == tuple: itype = 'selected'
 
 		if source == 'soft':
-			perc = (iticks*100)/total_ticks_soft
+			if total_ticks_soft > 0: perc = (iticks*100)/total_ticks_soft
+			else: perc = 0
 			source_a = 'S'
 		elif source == 'hard':
-			perc = (iticks*100)/total_ticks_hard
+			if total_ticks_hard > 0: perc = (iticks*100)/total_ticks_hard
+			else: perc = 0
 			source_a = 'H'
 
 		print prepend_timestamp("%-16s %1s %9s %10i %4i  %s" % (iname, source_a, itype, iticks, perc, desc,), etime, 'inttop')
