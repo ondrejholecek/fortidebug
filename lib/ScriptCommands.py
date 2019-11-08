@@ -168,8 +168,6 @@ class ScriptCommands:
 		return None
 
 	def clever_exec(self, command, vdom=None):
-#		print command, vdom
-
 		special = self.special_commands(command, vdom)	
 		if special != None: return special
 
