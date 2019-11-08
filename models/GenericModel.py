@@ -40,8 +40,12 @@ def GetModelSpec(serial):
 		model = __import__('models.1500D', fromlist=['Model']).Model()
 	elif serial[:6] == 'FG1K2D':
 		model = __import__('models.1200D', fromlist=['Model']).Model()
+	elif serial[:6] == 'FGT37D':
+		model = __import__('models.3700D', fromlist=['Model']).Model()
 	elif serial[:6] == 'FG5H0E':
 		model = __import__('models.500E', fromlist=['Model']).Model()
+	elif serial[:6] == 'FG5H1E':
+		model = __import__('models.501E', fromlist=['Model']).Model()
 	elif serial[:6] == 'FPM20E':
 		model = __import__('models.7620E', fromlist=['Model']).Model()
 	else:
