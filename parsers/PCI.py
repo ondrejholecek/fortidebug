@@ -53,3 +53,10 @@ class ParserPCI(EasyParser):
 				if (x['card_vendor'] == 0x1a29) and (x['card_product'] == 0x4338): 
 					cp8.append(x)
 			return range(len(cp8))
+
+		elif name == "np6_ids":
+			np6 = []
+			for x in result:
+				if (x['card_vendor'] == 0x1a29) and (x['card_product'] == 0x4e36): 
+					np6.append(x)
+			return range(len(np6)/2)
