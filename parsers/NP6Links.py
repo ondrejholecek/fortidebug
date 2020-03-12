@@ -25,9 +25,29 @@ class ParserNP6Links(EasyParser):
 					if s[0] == "Counters":
 						columns = [None,]
 						for i in range(1, len(s)):
-							cname = s[i].split('|')[-1]
+							cname = s[i]
+
+							alias = s[i].split('|')[0]
+							speed = 1000
+							if alias == "XE0"  : 
+								speed = 10000
+								alias = "XAUI_0"
+							elif alias == "XE1": 
+								speed = 10000
+								alias = "XAUI_1"
+							elif alias == "XE2": 
+								speed = 10000
+								alias = "XAUI_2"
+							elif alias == "XE3": 
+								speed = 10000
+								alias = "XAUI_3"
+
 							if cname not in data: 
-								data[cname] = { 'raw': {} }
+								data[cname] = {
+									'alias': alias,
+									'speed': speed,
+									'raw': {},
+								}
 							columns.append(cname)
 						continue
 	

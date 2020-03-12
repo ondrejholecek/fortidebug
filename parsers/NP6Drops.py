@@ -45,6 +45,7 @@ class ParserNP6Drops(EasyParser):
 			data[dtype]['summary'] = summary
 
 		#
+		data['collected_on'] = ctime
 		return data
 	
 	def parse_block(self, block):
