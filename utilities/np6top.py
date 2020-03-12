@@ -28,10 +28,11 @@ sshc, args = ssh([
 	{ 'name':'--no-colors', 'default':False, 'action':'store_true',  'help':'Do not colorize counters' },
 	{ 'name':'--no-sort', 'default':False, 'action':'store_true',  'help':'Do not sort by bandwidth' },
 	{ 'name':'--sum-drops', 'default':False, 'action':'store_true',  'help':'Summarize drops instead of counting per second' },
+	{ 'name':'--packets-per-interval', 'default':False, 'action':'store_true',  'help':'Show packets count per interval instead of per second' },
 ], """
 """, supports_script=False)
 
-def do(sshc, cache, show_zeros, max_lines, include_npus, force_units, show_drops, use_colors, sum_drops, sort, min_rate_Bps):
+def do(sshc, cache, show_zeros, max_lines, include_npus, force_units, show_drops, use_colors, sum_drops, sort, min_rate_Bps, ppi):
 	# Get all NP6 IDs from lspci
 	pci = ParserPCI(sshc)
 	np6ids = pci.simple_value(pci.get(), "np6_ids")
@@ -87,8 +88,14 @@ def do(sshc, cache, show_zeros, max_lines, include_npus, force_units, show_drops
 			txp = npus[npu][lane]["counters"]["tx_packets_all"] - cache["lanes"][npu][lane]["counters"]["tx_packets_all"]
 			rxb = npus[npu][lane]["counters"]["rx_bytes_all"] - cache["lanes"][npu][lane]["counters"]["rx_bytes_all"]
 			txb = npus[npu][lane]["counters"]["tx_bytes_all"] - cache["lanes"][npu][lane]["counters"]["tx_bytes_all"]
-			rxps = int(math.ceil((float(rxp) / tdiff)))
-			txps = int(math.ceil((float(txp) / tdiff)))
+
+			if ppi:        # packets per interval (instead of second)
+				rxps = rxp
+				txps = txp
+			else:
+				rxps = int(math.ceil((float(rxp) / tdiff)))
+				txps = int(math.ceil((float(txp) / tdiff)))
+
 			rxbs = int(math.ceil((float(rxb) / tdiff)))
 			txbs = int(math.ceil((float(txb) / tdiff)))
 
@@ -113,7 +120,11 @@ def do(sshc, cache, show_zeros, max_lines, include_npus, force_units, show_drops
 		print "\x1b[2J\x1b[H\033[1mNP6 lanes utilization    (written by Ondrej Holecek <oholecek@fortinet.com>)\033[0m"
 
 	
-	header = "NPU       LANE SPD       RX PPS      RX RATE units       TX PPS      TX RATE units"
+	if ppi:
+		header = "NPU       LANE SPD      RX PKTS      RX RATE units      TX PKTS      TX RATE units"
+	else:
+		header = "NPU       LANE SPD       RX PPS      RX RATE units       TX PPS      TX RATE units"
+
 	if show_drops: header += "  NPU DROPS"
 	print prepend_timestamp(header, etime, 'np6top')
 
@@ -268,6 +279,7 @@ if __name__ == '__main__':
 			'sum_drops': args.sum_drops,
 			'min_rate_Bps': args.min_rate_mbps*1000*1000/8,
 			'sort': not args.no_sort,
+			'ppi': args.packets_per_interval,
 		}, args.cycle_time, cycles_left=[args.max_cycles], debug=args.debug, interactive=args.interactive)
 	except KeyboardInterrupt:
 		sshc.destroy()
