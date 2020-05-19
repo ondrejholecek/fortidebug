@@ -6,6 +6,8 @@ This is a set of utilities to make FortiGate troubleshooting easier.
 
 This project is retired. For FortiGate troubleshooting and debugging please use [FortiLightHouse CLI](https://fortilighthouse.com/cli/docs/index.html) from the same author, which contains the same functionality and is significantly improved (static binary, no dependencies, no installation, more features, etc.).
 
+This page will be shut down soon.
+
 ## Utilities 
 
 Most of the [utilities](https://github.com/ondrejholecek/fortidebug/wiki/Utilities) are command line based and connect to the FortiGate over SSH.
